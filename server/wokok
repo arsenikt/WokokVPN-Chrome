@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+# wokok — manage your Wokok VPN server.
+set -euo pipefail
+ETC=/etc/wokok
+CFG=/usr/local/etc/xray/config.json
+AUTH=/home/wokok/.ssh/authorized_keys
+XRAY="$(command -v xray || echo /usr/local/bin/xray)"
+C1=$'\e[38;5;208m'; C2=$'\e[38;5;220m'; OK=$'\e[32m'; ERR=$'\e[31m'; DIM=$'\e[2m'; R=$'\e[0m'
+
+die() { printf '%s✖ %s%s\n' "$ERR" "$*" "$R" >&2; exit 1; }
+ok()  { printf '%s✔ %s%s\n' "$OK" "$*" "$R"; }
+[ "$(id -u)" -eq 0 ] || die "Run as root (sudo wokok …)"
+[ -f "$ETC/server.json" ] || die "Wokok is not installed: run server/install.sh"
+S() { jq -r ".$1" "$ETC/server.json"; }
+valid_name() { [[ "$1" =~ ^[A-Za-z0-9_.-]{1,32}$ ]] || die "Name must be 1-32 chars: letters, digits, . _ -"; }
+b64url() { base64 -w0 | tr '+/' '-_' | tr -d '='; }
+
+render() {
+  local clients
+  clients="$(for d in "$ETC"/users/*/; do [ -d "$d" ] || continue; n="$(basename "$d")"
+    jq -n --arg id "$(cat "$d/uuid")" --arg n "$n" '{id:$id,flow:"xtls-rprx-vision",email:$n}'; done | jq -s .)"
+  mkdir -p "$(dirname "$CFG")"
+  jq -n --argjson port "$(S port)" --arg sni "$(S sni)" --arg priv "$(S privateKey)" --arg sid "$(S shortId)" \
+        --argjson clients "$clients" '{
+    log:{loglevel:"warning"},
+    inbounds:[{tag:"wokok",listen:"0.0.0.0",port:$port,protocol:"vless",
+      settings:{clients:$clients,decryption:"none"},
+      streamSettings:{network:"tcp",security:"reality",realitySettings:{
+        show:false,dest:($sni+":443"),xver:0,serverNames:[$sni],privateKey:$priv,shortIds:[$sid,""]}},
+      sniffing:{enabled:true,destOverride:["http","tls","quic"],routeOnly:true}}],
+    outbounds:[{protocol:"freedom",tag:"direct"},{protocol:"blackhole",tag:"block"}],
+    routing:{rules:[{type:"field",ip:["geoip:private"],outboundTag:"block"},
+                    {type:"field",protocol:["bittorrent"],outboundTag:"block"}]}}' > "$CFG.tmp"
+  mv "$CFG.tmp" "$CFG"
+  if id wokok >/dev/null 2>&1; then
+    : > "$AUTH.tmp"
+    for d in "$ETC"/users/*/; do [ -f "$d/id_ed25519.pub" ] || continue
+      printf 'restrict,port-forwarding,command="/bin/false" %s\n' "$(cut -d' ' -f1,2 "$d/id_ed25519.pub") wokok:$(basename "$d")" >> "$AUTH.tmp"
+    done
+    install -m 600 -o wokok -g wokok "$AUTH.tmp" "$AUTH"; rm -f "$AUTH.tmp"
+  fi
+}
+
+reload() { systemctl restart xray; }
+
+cmd_add() {
+  local n="${1:-}" quiet="${2:-}"; [ -n "$n" ] || die "Usage: wokok add NAME"; valid_name "$n"
+  local d="$ETC/users/$n"; [ -e "$d" ] && die "User '$n' already exists"
+  mkdir -p "$d"; chmod 700 "$d"
+  "$XRAY" uuid > "$d/uuid"
+  if [ "$(S ssh)" = "true" ]; then ssh-keygen -q -t ed25519 -N "" -C "wokok:$n" -f "$d/id_ed25519"; fi
+  render
+  if [ "$quiet" != "--quiet" ]; then reload; ok "Added '$n'"; cmd_link "$n"; fi
+}
+
+cmd_del() {
+  local n="${1:-}"; [ -n "$n" ] || die "Usage: wokok del NAME"; valid_name "$n"
+  [ -d "$ETC/users/$n" ] || die "No user '$n'"
+  rm -rf "${ETC:?}/users/$n"; render; reload; ok "Revoked '$n' (Reality + SSH keys)"
+}
+
+cmd_list() {
+  printf '%sUsers on %s%s\n' "$C2" "$(S name)" "$R"
+  for d in "$ETC"/users/*/; do [ -d "$d" ] && printf '  • %s %s%s%s\n' "$(basename "$d")" "$DIM" "$(cat "$d/uuid")" "$R"; done
+}
+
+links() {
+  local n="$1" d="$ETC/users/$1"; [ -d "$d" ] || die "No user '$n'"
+  local uuid; uuid="$(cat "$d/uuid")"
+  local label="$(S name) · $n"
+  local json
+  json="$(jq -nc --arg name "$label" --arg host "$(S host)" --argjson port "$(S port)" --arg id "$uuid" \
+      --arg pbk "$(S publicKey)" --arg sid "$(S shortId)" --arg sni "$(S sni)" '{v:1,name:$name,host:$host,port:$port,id:$id,pbk:$pbk,sid:$sid,sni:$sni}')"
+  if [ -f "$d/id_ed25519" ]; then
+    json="$(jq -c --argjson p "$(S sshPort)" --arg k "$(base64 -w0 < "$d/id_ed25519" 2>/dev/null || base64 < "$d/id_ed25519" | tr -d '\n')" \
+      '. + {ssh:{port:$p,user:"wokok",key:$k}}' <<<"$json")"
+  fi
+  WOKOK="wokok://$(printf '%s' "$json" | b64url)"
+  local enc; enc="$(jq -rn --arg s "$label" '$s|@uri')"
+  VLESS="vless://$uuid@$(S host):$(S port)?encryption=none&flow=xtls-rprx-vision&security=reality&sni=$(S sni)&fp=chrome&pbk=$(S publicKey)&sid=$(S shortId)&type=tcp#$enc"
+}
+
+cmd_link() {
+  local n="${1:-me}"; links "$n"
+  printf '\n%s🔥 Wokok link for "%s" (paste into the Chrome extension):%s\n%s\n' "$C1" "$n" "$R" "$WOKOK"
+  printf '\n%s📱 vless:// link (v2rayN / Hiddify / Streisand / NekoBox):%s\n%s\n\n' "$C2" "$R" "$VLESS"
+  if command -v qrencode >/dev/null; then qrencode -t ANSIUTF8 -m 1 "$VLESS"; printf '%s   ↑ scan with a phone VPN app%s\n' "$DIM" "$R"; fi
+}
+
+cmd_status() {
+  printf '%s%s%s  %s:%s  sni=%s\n' "$C2" "$(S name)" "$R" "$(S host)" "$(S port)" "$(S sni)"
+  systemctl is-active --quiet xray && ok "xray running" || printf '%s✖ xray stopped%s\n' "$ERR" "$R"
+  printf 'users: %s   ssh fallback: %s\n' "$(find "$ETC/users" -mindepth 1 -maxdepth 1 -type d | wc -l)" "$(S ssh)"
+}
+
+cmd_sni() {
+  local s="${1:-}"; [ -n "$s" ] || die "Usage: wokok sni www.example.com"
+  jq --arg s "$s" '.sni=$s' "$ETC/server.json" > "$ETC/s.tmp" && mv "$ETC/s.tmp" "$ETC/server.json"
+  render; reload; ok "SNI → $s. Re-share links: wokok link NAME"
+}
+
+cmd_uninstall() {
+  if [ "${1:-}" != "--yes" ]; then read -r -p "Remove Wokok, Xray and all user keys? [y/N] " a; [ "$a" = y ] || exit 0; fi
+  systemctl disable --now xray >/dev/null 2>&1 || true
+  bash -c "$(curl -fsSL https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ remove --purge >/dev/null 2>&1 || true
+  id wokok >/dev/null 2>&1 && userdel -r wokok 2>/dev/null || true
+  rm -rf "$ETC" /usr/local/bin/wokok
+  ok "Wokok removed. Bye 🥡"
+}
+
+help() {
+  cat <<EOF
+${C1}wokok${R} — Wokok VPN server control
+  wokok add NAME      create a key for a friend and print the link + QR
+  wokok del NAME      revoke a key
+  wokok list          list keys
+  wokok link [NAME]   show link + QR again (default: me)
+  wokok status        health check
+  wokok sni HOST      change the site Reality disguises as
+  wokok render        rebuild configs from /etc/wokok
+  wokok restart       restart xray
+  wokok update        update Xray-core
+  wokok uninstall     remove everything
+EOF
+}
+
+case "${1:-help}" in
+  add) cmd_add "${2:-}" "${3:-}" ;;
+  del|rm|revoke) cmd_del "${2:-}" ;;
+  list|ls) cmd_list ;;
+  link|qr|show) cmd_link "${2:-me}" ;;
+  status) cmd_status ;;
+  sni) cmd_sni "${2:-}" ;;
+  render) render ;;
+  restart) reload; ok restarted ;;
+  update) bash -c "$(curl -fsSL https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install >/dev/null; reload; ok "Xray $("$XRAY" version | head -1 | awk '{print $2}')" ;;
+  uninstall) cmd_uninstall "${2:-}" ;;
+  *) help ;;
+esac

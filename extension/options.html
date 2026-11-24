@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Wokok VPN · Settings</title>
+<link rel="stylesheet" href="options.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="icons/on128.png" alt="" width="56" height="56">
+    <div><h1>Wokok <span>VPN</span></h1><p data-t="tag"></p></div>
+    <select id="lang"><option value="">Auto</option><option value="en">English</option><option value="ru">Русский</option></select>
+  </header>
+
+  <div id="hostWarn" class="card warn" hidden>
+    <h2 data-t="hostTitle"></h2>
+    <p data-t="hostText"></p>
+    <code id="cmdWin"></code><code id="cmdNix"></code>
+  </div>
+
+  <div class="card">
+    <h2 data-t="servers"></h2>
+    <ul id="servers"></ul>
+    <div class="row">
+      <input id="link" placeholder="wokok://…  /  vless://…" spellcheck="false">
+      <button id="add" class="primary" data-t="add"></button>
+    </div>
+    <div id="addErr" class="err"></div>
+    <div class="row opts">
+      <label><input type="checkbox" id="autoBest"> <span data-t="autoBest"></span></label>
+      <label><span data-t="transport"></span>
+        <select id="transport"><option value="auto">Reality → SSH</option><option value="reality">Reality only</option><option value="ssh">SSH only</option></select></label>
+      <button id="pingAll" data-t="pingAll"></button>
+    </div>
+    <p class="hint" data-t="serverHint"></p>
+  </div>
+
+  <div class="card">
+    <h2 data-t="routing"></h2>
+    <div class="seg" id="mode">
+      <button data-mode="all"></button><button data-mode="smart"></button><button data-mode="except"></button>
+    </div>
+    <p class="hint" id="modeHint"></p>
+
+    <div id="smartBox">
+      <h3 data-t="presets"></h3>
+      <div id="presets" class="presets"></div>
+      <label class="line"><input type="checkbox" id="community"> <span data-t="community"></span> <b id="cCount"></b>
+        <button id="cRefresh" class="link" data-t="refresh"></button></label>
+      <h3 data-t="mySites"></h3>
+      <textarea id="smartSites" rows="5" spellcheck="false"></textarea>
+    </div>
+    <div id="exceptBox">
+      <h3 data-t="exceptSites"></h3>
+      <textarea id="exceptSites" rows="5" spellcheck="false"></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 data-t="protection"></h2>
+    <label class="line"><input type="checkbox" id="killSwitch"> <span data-t="kill"></span></label>
+    <label class="line"><input type="checkbox" id="webrtc"> <span data-t="webrtc"></span></label>
+    <p class="hint" data-t="dnsHint"></p>
+  </div>
+
+  <div class="card">
+    <h2 data-t="extras"></h2>
+    <p data-t="keys"></p>
+    <div class="row">
+      <button id="shortcuts" data-t="editKeys"></button>
+      <button id="export" data-t="export"></button>
+      <label class="btn"><span data-t="import"></span><input type="file" id="import" accept=".json" hidden></label>
+    </div>
+  </div>
+
+  <footer><a href="https://github.com/arsenikt/WokokVPN-Chrome" target="_blank">GitHub</a> · MIT · <span id="ver"></span></footer>
+</div>
+<script type="module" src="options.js"></script>
+</body>
+</html>

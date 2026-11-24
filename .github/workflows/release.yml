@@ -1,0 +1,27 @@
+name: release
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check scripts
+        run: |
+          bash -n server/install.sh server/wokok client/install.sh
+          perl -c client/host/wokok-host.pl
+          for f in extension/*.js extension/lib/*.js; do node --input-type=module --check < "$f"; done
+      - name: Pack extension
+        run: |
+          cd extension && zip -qr ../wokok-extension.zip . && cd ..
+          zip -qr wokok-full.zip extension client server README.md README.ru.md LICENSE
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            wokok-extension.zip
+            wokok-full.zip
+          generate_release_notes: true

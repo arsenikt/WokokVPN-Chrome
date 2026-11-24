@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Wokok VPN</title>
+<link rel="stylesheet" href="popup.css">
+</head>
+<body class="off">
+  <header>
+    <div class="logo">Wokok<span>VPN</span></div>
+    <select id="server" class="chip" title="Server"></select>
+    <button id="opts" class="icon" title="Settings" aria-label="Settings">⚙</button>
+  </header>
+
+  <!-- onboarding -->
+  <section id="welcome" hidden>
+    <p id="wTitle"></p>
+    <textarea id="link" rows="3" placeholder="wokok://…  or  vless://…" spellcheck="false"></textarea>
+    <button id="addBtn" class="primary"></button>
+    <div id="wErr" class="err"></div>
+    <a id="howTo" target="_blank"></a>
+  </section>
+
+  <!-- helper missing -->
+  <section id="nohost" hidden>
+    <p id="nhText"></p>
+    <div class="os"><button data-os="win" class="on">Windows</button><button data-os="nix">macOS / Linux</button></div>
+    <code id="cmd"></code>
+    <button id="copyCmd" class="primary"></button>
+  </section>
+
+  <main id="main">
+    <button id="toggle" class="stage" aria-label="VPN on/off">
+      <div class="glow"></div>
+      <svg viewBox="0 0 220 170" class="wok" aria-hidden="true">
+        <defs>
+          <radialGradient id="iron" cx="45%" cy="20%" r="80%"><stop offset="0" stop-color="#4a423d"/><stop offset="1" stop-color="#151211"/></radialGradient>
+          <linearGradient id="fire" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffd23f"/><stop offset=".5" stop-color="#ff7a1a"/><stop offset="1" stop-color="#e5341b" stop-opacity="0"/></linearGradient>
+        </defs>
+        <g class="food">
+          <path class="noodle" d="M70 52 q12 -26 26 -6 q10 14 22 -8"/>
+          <path class="noodle" d="M104 46 q14 -30 30 -4"/>
+          <circle class="pea" cx="88" cy="34" r="5"/><circle class="chili" cx="128" cy="28" r="5"/><circle class="pea" cx="112" cy="20" r="4"/>
+        </g>
+        <g class="pan">
+          <rect x="178" y="58" width="44" height="10" rx="5" transform="rotate(-14 178 63)" fill="#2a2421"/>
+          <path d="M18 70 A84 62 0 0 0 186 70 Z" fill="url(#iron)"/>
+          <ellipse cx="102" cy="70" rx="86" ry="11" class="rim"/><ellipse cx="102" cy="70" rx="76" ry="7" class="sauce"/>
+        </g>
+        <g class="flames">
+          <path d="M70 168 q-14 -22 0 -40 q4 16 12 10 q8 18 -12 30z" fill="url(#fire)"/>
+          <path d="M102 168 q-18 -30 0 -50 q6 22 14 14 q8 22 -14 36z" fill="url(#fire)"/>
+          <path d="M134 168 q-14 -22 0 -40 q4 16 12 10 q8 18 -12 30z" fill="url(#fire)"/>
+        </g>
+        <rect x="40" y="160" width="124" height="6" rx="3" fill="#2a2421"/>
+      </svg>
+    </button>
+
+    <div class="status"><div id="title"></div><div id="sub"></div></div>
+
+    <div class="seg" id="modes">
+      <button data-mode="all"></button><button data-mode="smart"></button><button data-mode="except"></button>
+    </div>
+
+    <div id="blocked" class="banner" hidden><span id="bText"></span><button id="bYes"></button></div>
+
+    <div class="site" id="site">
+      <span class="dot"></span><b id="siteHost">—</b>
+      <button id="siteBtn" class="pill"></button>
+    </div>
+
+    <div class="tiles">
+      <div class="tile"><span id="lIp"></span><b id="ip">—</b><i id="geo"></i></div>
+      <div class="tile"><span id="lPing"></span><b id="ping">—</b><i id="mode">—</i></div>
+      <div class="tile click" id="speedTile"><span id="lSpeed"></span><b id="speed">—</b><i id="speedHint"></i></div>
+      <div class="tile"><span id="lUp"></span><b id="timer">—</b><i>Alt+Shift+V</i></div>
+    </div>
+  </main>
+
+  <footer><a id="repo" target="_blank">github · wokok vpn</a></footer>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

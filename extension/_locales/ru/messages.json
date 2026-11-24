@@ -1,0 +1,6 @@
+{
+  "name": { "message": "Wokok VPN — свой Reality VPN для Chrome" },
+  "desc": { "message": "Жарь трафик через свой сервер. VLESS Reality + запасной SSH, умная маршрутизация по сайтам, защита от утечек." },
+  "cmdToggle": { "message": "Включить / выключить VPN" },
+  "cmdSite": { "message": "Текущий сайт через VPN / напрямую" }
+}

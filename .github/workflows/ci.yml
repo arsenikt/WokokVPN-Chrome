@@ -1,0 +1,12 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get install -y shellcheck
+      - run: shellcheck -S error server/install.sh server/wokok client/install.sh
+      - run: perl -c client/host/wokok-host.pl
+      - run: for f in extension/*.js extension/lib/*.js; do node --input-type=module --check < "$f"; done
+      - run: node -e "JSON.parse(require('fs').readFileSync('extension/manifest.json'))"

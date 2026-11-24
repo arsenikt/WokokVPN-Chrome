@@ -1,0 +1,6 @@
+{
+  "name": { "message": "Wokok VPN — your own Reality VPN for Chrome" },
+  "desc": { "message": "Stir-fry your traffic through your own server. VLESS Reality + SSH fallback, smart per-site routing, leak protection." },
+  "cmdToggle": { "message": "Turn the VPN on / off" },
+  "cmdSite": { "message": "Route the current site via VPN / direct" }
+}
