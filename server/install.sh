@@ -52,23 +52,52 @@ ${C2}        stir-fry your traffic · Reality + SSH fallback${R}
 EOF
 
 # ---------- packages ----------
-say "Installing packages (curl, jq, qrencode, openssl)…"
-if command -v apt-get >/dev/null; then
-  export DEBIAN_FRONTEND=noninteractive
-  apt-get update -qq >/dev/null
-  apt-get install -y -qq curl jq qrencode openssl ca-certificates unzip >/dev/null
-elif command -v dnf >/dev/null; then
-  dnf install -y -q epel-release >/dev/null 2>&1 || true
-  dnf install -y -q curl jq qrencode openssl unzip >/dev/null
-elif command -v yum >/dev/null; then
-  yum install -y -q epel-release >/dev/null 2>&1 || true
-  yum install -y -q curl jq qrencode openssl unzip >/dev/null
-elif command -v apk >/dev/null; then
-  apk add -q curl jq libqrencode-tools openssl bash unzip >/dev/null
+# Only install what is missing; never hide errors; survive a half-broken dpkg.
+LOG=/tmp/wokok-install.log; : > "$LOG"
+REQ=(curl jq openssl unzip); OPT=(qrencode)
+missing=(); for t in "${REQ[@]}" "${OPT[@]}"; do command -v "$t" >/dev/null || missing+=("$t"); done
+
+apt_try() {
+  apt-get -o DPkg::Lock::Timeout=180 -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold "$@" >>"$LOG" 2>&1
+}
+pkg_install() {  # $@ = package names
+  if command -v apt-get >/dev/null; then
+    export DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a
+    apt_try update || true
+    apt_try install -y --no-install-recommends "$@" ca-certificates && return 0
+    say "apt failed, repairing the package manager (dpkg --configure -a, apt -f install)…"
+    dpkg --configure -a >>"$LOG" 2>&1 || true
+    apt_try install -f -y || true
+    apt_try install -y --no-install-recommends "$@" ca-certificates
+  elif command -v dnf >/dev/null; then
+    dnf install -y -q epel-release >>"$LOG" 2>&1 || true; dnf install -y -q "$@" >>"$LOG" 2>&1
+  elif command -v yum >/dev/null; then
+    yum install -y -q epel-release >>"$LOG" 2>&1 || true; yum install -y -q "$@" >>"$LOG" 2>&1
+  elif command -v apk >/dev/null; then
+    apk add -q bash "${@/qrencode/libqrencode-tools}" >>"$LOG" 2>&1
+  else
+    return 1
+  fi
+}
+
+if [ ${#missing[@]} -eq 0 ]; then
+  ok "Packages already present"
 else
-  die "Unsupported distro: install curl jq qrencode openssl manually"
+  say "Installing: ${missing[*]}…"
+  if ! pkg_install "${missing[@]}"; then
+    # retry without optional tools (QR is nice-to-have)
+    req_missing=(); for t in "${REQ[@]}"; do command -v "$t" >/dev/null || req_missing+=("$t"); done
+    [ ${#req_missing[@]} -eq 0 ] || pkg_install "${req_missing[@]}" || true
+  fi
+  for t in "${REQ[@]}"; do
+    if ! command -v "$t" >/dev/null; then
+      printf '%s\n--- last lines of %s ---%s\n' "$ERR" "$LOG" "$R" >&2; tail -n 25 "$LOG" >&2
+      die "Could not install '$t'. Fix the package manager (see log above), e.g.:  sudo dpkg --configure -a && sudo apt -f install   then re-run."
+    fi
+  done
+  command -v qrencode >/dev/null || printf '%s! qrencode not installed: links will be shown without QR codes%s\n' "$C2" "$R"
+  ok "Packages ready"
 fi
-ok "Packages ready"
 
 # ---------- xray ----------
 if ! command -v xray >/dev/null; then
