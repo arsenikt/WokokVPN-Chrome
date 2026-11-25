@@ -85,9 +85,36 @@ if (-not (Test-Path "$env:SystemRoot\System32\OpenSSH\ssh.exe")) {
 
 Set-Clipboard -Value $ext -ErrorAction SilentlyContinue
 Write-Host ""
-Write-Host "  Almost done:" -ForegroundColor Yellow
-Write-Host "   1. Open  chrome://extensions  and turn on Developer mode"
-Write-Host "   2. Load unpacked -> $ext   (path is already in your clipboard)"
-Write-Host "   3. Click the wok icon and paste your wokok:// link"
+function Step($n, $t) { Write-Host ""; Write-Host "  [$n] $t" -ForegroundColor DarkYellow; Write-Host "  ------------------------------------------------------------" -ForegroundColor DarkGray }
+function Cmd($t)  { Write-Host "      $t" -ForegroundColor Yellow }
+function Txt($t)  { Write-Host "      $t" }
+function Dim($t)  { Write-Host "      $t" -ForegroundColor DarkGray }
+
+Write-Host ""
+Write-Host "  This PC is ready. 3 steps left:" -ForegroundColor Green
+
+Step "1/3" "SERVER: get your wokok:// link"
+Txt "You need a VPS outside your country (Ubuntu/Debian, 512 MB RAM, ~`$3/mo)."
+Txt "Connect to it over SSH and run ONE command:"
+Write-Host ""
+Cmd "ssh root@YOUR_SERVER_IP"
+Cmd "curl -fsSL https://raw.githubusercontent.com/$Repo/$Branch/server/install.sh | sudo bash"
+Write-Host ""
+Txt "After ~30 s it prints a link that starts with  wokok://  - copy it."
+Dim "Already installed?  Show the link again:   sudo wokok link me"
+Dim "Link for a friend:                       sudo wokok add alice"
+
+Step "2/3" "CHROME: load the extension (once)"
+Txt "1. Open  chrome://extensions"
+Txt "2. Turn on  Developer mode  (top right)"
+Txt "3. Click  Load unpacked  and choose:"
+Cmd $ext
+Dim "(path is already in your clipboard; the folder is opening now)"
+Dim "Updating? Just press the reload button on the Wokok card."
+
+Step "3/3" "CONNECT"
+Txt "Click the wok icon in Chrome -> paste the wokok:// link -> tap the wok."
+Write-Host ""
+Write-Host "  Help: https://github.com/$Repo#-quick-start" -ForegroundColor DarkGray
 Write-Host ""
 Start-Process explorer.exe $ext

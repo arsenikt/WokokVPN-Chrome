@@ -67,12 +67,37 @@ if [ -n "$HERE" ] && [ -f "$HERE/../extension/manifest.json" ]; then cp -R "$HER
 else tmp="$(mktemp -d)"; curl -fsSL "https://github.com/$REPO/releases/latest/download/wokok-extension.zip" -o "$tmp/e.zip"; unzip -oq "$tmp/e.zip" -d "$EXT"; rm -rf "$tmp"; fi
 ok "Extension unpacked to $EXT"
 
+Y=$'\e[33m'; D=$'\e[2m'; G=$'\e[32m'
+LINE="${D}  ------------------------------------------------------------${R}"
 cat <<EOF
 
-${C1}  Almost done:${R}
-   1. Open  chrome://extensions  and turn on Developer mode
-   2. Load unpacked -> $EXT
-   3. Click the wok icon and paste your wokok:// link
+${G}  This computer is ready. 3 steps left:${R}
+
+${C1}  [1/3] SERVER: get your wokok:// link${R}
+$LINE
+      You need a VPS outside your country (Ubuntu/Debian, 512 MB RAM, ~\$3/mo).
+      Connect to it over SSH and run ONE command:
+
+${Y}      ssh root@YOUR_SERVER_IP
+      curl -fsSL $RAW/server/install.sh | sudo bash${R}
+
+      After ~30 s it prints a link that starts with  wokok://  - copy it.
+${D}      Already installed?  Show the link again:   sudo wokok link me
+      Link for a friend:                       sudo wokok add alice${R}
+
+${C1}  [2/3] CHROME: load the extension (once)${R}
+$LINE
+      1. Open  chrome://extensions
+      2. Turn on  Developer mode  (top right)
+      3. Click  Load unpacked  and choose:
+${Y}      $EXT${R}
+${D}      Updating? Just press the reload button on the Wokok card.${R}
+
+${C1}  [3/3] CONNECT${R}
+$LINE
+      Click the wok icon in Chrome -> paste the wokok:// link -> tap the wok.
+
+${D}  Help: https://github.com/$REPO#-quick-start${R}
 
 EOF
 [ "$OS" = Darwin ] && open "$EXT" 2>/dev/null || true
