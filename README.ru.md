@@ -139,14 +139,13 @@ Wokok — инструмент для приватного доступа к с�
 
 PR приветствуются: новые пресеты, переводы, порт под Firefox. Если Wokok вас выручил, поставьте ⭐, так проект найдут другие.
 
-<details><summary>🥡 На покупку вока</summary>
+### 🥡 На покупку вока
 
 Бесплатно навсегда. Если Wokok выручил, киньте монетку в вок, а то старый уже перегревается от трафика.
 
 - **EVM** (ETH · BSC · Base · Polygon): `0x0aA2d41976f087763a354d598D32c21E1983CbFD`
 - **Solana**: `E1M7Ztc1MGnc587mmhk2dqBn2rWc4dXyx8huQ2HHpQjt`
 - **TRON** (USDT TRC-20): `TXTrfbxAuy63ngzfWNiqubb2y2DHVqWbg9`
-</details>
 
 ## Лицензия
 

@@ -146,14 +146,13 @@ Wokok is a tool for private access to your own server. Follow the laws of your c
 
 PRs are welcome. Good first issues: new presets, translations, Firefox port. If Wokok saved your evening, a ⭐ helps others find it.
 
-<details><summary>🥡 Buy the author a wok</summary>
+### 🥡 Buy the author a wok
 
 Free forever. If Wokok saved your evening, toss a coin into the wok, because the old one is overheating from all that traffic.
 
 - **EVM** (ETH · BSC · Base · Polygon): `0x0aA2d41976f087763a354d598D32c21E1983CbFD`
 - **Solana**: `E1M7Ztc1MGnc587mmhk2dqBn2rWc4dXyx8huQ2HHpQjt`
 - **TRON** (USDT TRC-20): `TXTrfbxAuy63ngzfWNiqubb2y2DHVqWbg9`
-</details>
 
 ## License
 

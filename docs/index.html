@@ -41,8 +41,8 @@ h2{font:800 34px/1.2 "Segoe UI",sans-serif;text-align:center;margin:0 0 30px}
 .wide{width:100%;border-radius:22px;border:1px solid var(--line);box-shadow:0 30px 80px rgba(255,90,30,.15)}
 footer{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px}
 .tip{max-width:560px;margin:0 auto;padding:0 20px 10px;text-align:center}
-.tip summary{display:inline-flex;align-items:center;gap:6px;list-style:none;cursor:pointer;padding:5px 12px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-size:13px;opacity:.7;transition:opacity .2s}
-.tip summary::-webkit-details-marker{display:none}.tip summary:hover,.tip[open] summary{opacity:1;border-color:rgba(255,122,26,.45)}
+.tip .tipt{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-size:13px;opacity:.7;transition:opacity .2s}
+.tip .tipt{opacity:1;border-color:rgba(255,122,26,.45)}
 .tip p{color:var(--muted);font-size:13px;margin:12px 0 8px}
 .addr{display:flex;align-items:center;gap:8px;margin:6px 0;padding:6px 10px;border-radius:10px;background:rgba(0,0,0,.4);border:1px solid var(--line);cursor:copy;text-align:left}
 .addr b{min-width:56px;color:var(--fire);font-size:12px}.addr code{flex:1;min-width:0;font:12px Consolas,monospace;color:var(--gold);overflow-wrap:anywhere}
@@ -71,13 +71,13 @@ footer{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px}
   <div class="grid" id="features"></div>
 </section>
 <section><img class="wide" src="img/smart-routing.png" alt="Smart routing"></section>
-<details class="tip" id="wok" open>
-  <summary>🥡 <span data-en="buy the author a wok" data-ru="на покупку вока"></span></summary>
+<div class="tip" id="wok">
+  <div class="tipt">🥡 <span data-en="buy the author a wok" data-ru="на покупку вока"></span></div>
   <p data-en="Free forever. If Wokok saved your evening, toss a coin into the wok. Click to copy." data-ru="Бесплатно навсегда. Если Wokok выручил, киньте монетку в вок. Нажмите, чтобы скопировать."></p>
   <div class="addr"><b>EVM</b><code>0x0aA2d41976f087763a354d598D32c21E1983CbFD</code><span>ETH·BSC·Base</span></div>
   <div class="addr"><b>Solana</b><code>E1M7Ztc1MGnc587mmhk2dqBn2rWc4dXyx8huQ2HHpQjt</code><span>SOL</span></div>
   <div class="addr"><b>TRON</b><code>TXTrfbxAuy63ngzfWNiqubb2y2DHVqWbg9</code><span>USDT</span></div>
-</details>
+</div>
 <footer>MIT · <a href="https://github.com/arsenikt/WokokVPN-Chrome">GitHub</a> · powered by Xray-core Reality</footer>
 
 <script>
@@ -100,7 +100,6 @@ document.getElementById("lang").onclick=e=>{e.preventDefault();L=L==="ru"?"en":"
 document.querySelector(".tabs").onclick=e=>{if(e.target.dataset.os){os=e.target.dataset.os;render()}};
 document.querySelectorAll(".cmd button").forEach(b=>b.onclick=()=>{navigator.clipboard.writeText(b.previousElementSibling.textContent);b.textContent="✔";setTimeout(()=>b.textContent="Copy",1400)});
 document.querySelectorAll(".addr").forEach(a=>a.onclick=()=>{navigator.clipboard.writeText(a.querySelector("code").textContent);const s=a.querySelector("span"),t=s.textContent;s.textContent="✔ copied";setTimeout(()=>s.textContent=t,1400)});
-if(location.hash==="#wok")document.getElementById("wok").open=true;
 render();
 </script>
 </body>
