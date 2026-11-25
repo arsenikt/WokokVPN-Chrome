@@ -89,6 +89,26 @@ else
     req_missing=(); for t in "${REQ[@]}"; do command -v "$t" >/dev/null || req_missing+=("$t"); done
     [ ${#req_missing[@]} -eq 0 ] || pkg_install "${req_missing[@]}" || true
   fi
+  # Package manager is broken? Fetch a static jq so a bad dpkg can't block us.
+  if ! command -v jq >/dev/null && command -v curl >/dev/null; then
+    case "$(uname -m)" in aarch64|arm64) JQA=arm64 ;; armv7*) JQA=armhf ;; *) JQA=amd64 ;; esac
+    say "Package manager failed, downloading static jq ($JQA)…"
+    curl -fsSL "https://github.com/jqlang/jq/releases/latest/download/jq-linux-$JQA" -o /usr/local/bin/jq >>"$LOG" 2>&1 \
+      && chmod 755 /usr/local/bin/jq && /usr/local/bin/jq --version >/dev/null 2>&1 || rm -f /usr/local/bin/jq
+    hash -r
+  fi
+  # No unzip and no working apt: tiny python3 stand-in (enough for the Xray installer: unzip -q FILE -d DIR).
+  if ! command -v unzip >/dev/null && command -v python3 >/dev/null; then
+    cat > /usr/local/bin/unzip <<'PY'
+#!/usr/bin/env python3
+import sys, zipfile
+a = [x for x in sys.argv[1:] if not x.startswith('-') or x == '-d']
+d = a[a.index('-d') + 1] if '-d' in a else '.'
+f = [x for x in a if x != '-d' and x != d][0]
+zipfile.ZipFile(f).extractall(d)
+PY
+    chmod 755 /usr/local/bin/unzip; hash -r
+  fi
   for t in "${REQ[@]}"; do
     if ! command -v "$t" >/dev/null; then
       printf '%s\n--- last lines of %s ---%s\n' "$ERR" "$LOG" "$R" >&2; tail -n 25 "$LOG" >&2
