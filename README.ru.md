@@ -8,6 +8,10 @@
 
 **VLESS + Reality** выглядит как обычный HTTPS · **запасной SSH** · **умная маршрутизация по сайтам** · **защита от утечек**
 
+[![Установить в Chrome](https://img.shields.io/badge/%D0%A3%D1%81%D1%82%D0%B0%D0%BD%D0%BE%D0%B2%D0%B8%D1%82%D1%8C%20%D0%B2-Chrome-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](#3-chrome)
+[![Скачать расширение](https://img.shields.io/github/v/release/arsenikt/WokokVPN-Chrome?label=%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5&style=for-the-badge&color=ff7a1a)](https://github.com/arsenikt/WokokVPN-Chrome/releases/latest/download/wokok-extension.zip)
+
+
 [![License: MIT](https://img.shields.io/badge/license-MIT-ff7a1a.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/arsenikt/WokokVPN-Chrome?color=ffd23f)](https://github.com/arsenikt/WokokVPN-Chrome/releases)
 ![Chrome](https://img.shields.io/badge/Chrome%20·%20Edge%20·%20Brave%20·%20Vivaldi%20·%20Яндекс-supported-ff3d2e)

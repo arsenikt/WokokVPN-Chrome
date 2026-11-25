@@ -231,7 +231,7 @@ ${C2}  Lost the link? Get it again any time on this server:${R}
      ${C1}sudo wokok link${R}            (also saved in /root/wokok-links.txt)
 
 ${C2}  Next:${R}
-  1. On your PC install the helper:  https://github.com/$REPO#-2-your-computer
+  1. On your PC install the helper:  https://github.com/$REPO#2-your-computer
   2. Click the wok icon in Chrome → paste the ${C1}wokok://${R} link above.
   ⚠ Cloud firewall! Many VPS providers block ports in their web panel (not on the server).
      Make sure TCP $(jq -r .port "$ETC/server.json") is open there, otherwise the extension cannot connect.

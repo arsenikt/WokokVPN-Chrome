@@ -8,6 +8,10 @@
 
 **VLESS + Reality** that looks like ordinary HTTPS · **SSH fallback** · **Smart per-site routing** · **Leak protection**
 
+[![Get for Chrome](https://img.shields.io/badge/Get%20for-Chrome-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](#3-chrome)
+[![Download extension](https://img.shields.io/github/v/release/arsenikt/WokokVPN-Chrome?label=Extension&style=for-the-badge&color=ff7a1a)](https://github.com/arsenikt/WokokVPN-Chrome/releases/latest/download/wokok-extension.zip)
+
+
 [![License: MIT](https://img.shields.io/badge/license-MIT-ff7a1a.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/arsenikt/WokokVPN-Chrome?color=ffd23f)](https://github.com/arsenikt/WokokVPN-Chrome/releases)
 ![Chrome](https://img.shields.io/badge/Chrome%20·%20Edge%20·%20Brave%20·%20Vivaldi%20·%20Yandex-supported-ff3d2e)
