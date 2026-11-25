@@ -19,3 +19,16 @@ on.resize((512, 512), Image.LANCZOS).save(root / "docs/img/logo.png", optimize=T
 for name, src in (("on", on), ("off", off)):
     for s in (16, 32, 48, 128):
         src.resize((s, s), Image.LANCZOS).save(root / f"extension/icons/{name}{s}.png", optimize=True)
+
+# Site hero emblem: drop the dark glass tile, keep only what glows ("unscreen" against the tile colour).
+import numpy as np
+src = np.asarray(Image.open(root / "assets/gemini/logo.png").convert("RGB").crop((200, 200, 824, 824)), dtype=np.float32)
+base = np.array([46, 48, 54], np.float32)            # tile colour
+lift = np.clip(src - base, 0, None) / (255 - base)   # 0..1 above the tile
+a = lift.max(axis=2, keepdims=True)
+a = np.clip((a - 0.10) / 0.90, 0, 1) ** 0.85         # kill tile noise / glass sheen
+n = a.shape[0]; yy, xx = np.mgrid[0:n, 0:n] / (n - 1) - 0.5
+a = a * np.clip((0.49 - np.hypot(xx, yy * 1.05)) / 0.12, 0, 1)[..., None]  # fade tile edges
+rgb = np.where(a > 0, np.clip(lift / np.maximum(a, 1e-3), 0, 1), 0) * 255
+glow = Image.fromarray(np.concatenate([rgb, a * 255], axis=2).astype(np.uint8), "RGBA")
+glow.resize((512, 512), Image.LANCZOS).save(root / "docs/img/logo-glow.png", optimize=True)
