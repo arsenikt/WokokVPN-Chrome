@@ -146,8 +146,13 @@ export function t(s) { return STR[lang(s)]; }
 export async function addServer(text) {
   const p = parseLink(text);
   const s = await load();
-  const existing = s.servers.find((x) => x.host === p.host && x.port === p.port && x.uuid === p.uuid);
-  if (existing) { await save({ activeId: existing._id }); return existing; }
+  // Same server + same user key = same entry: refresh it with the new link (new SSH port, SNI, Reality key…).
+  const existing = s.servers.find((x) => x.host === p.host && x.uuid === p.uuid);
+  if (existing) {
+    const updated = { ...existing, ...p, _id: existing._id };
+    await save({ servers: s.servers.map((x) => (x._id === existing._id ? updated : x)), activeId: existing._id });
+    return updated;
+  }
   const srv = { _id: crypto.randomUUID(), ...p };
   await save({ servers: [...s.servers, srv], activeId: s.activeId || srv._id });
   return srv;

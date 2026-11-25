@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.1.8
+- Pasting a new link for an already added server now updates it (SSH port, SNI, keys) instead of silently keeping the old data
+
 ## 2.1.7
 - `sudo wokok update` now updates everything: wokok itself, Xray-core and generated configs (keys and links stay); `--check` only looks
 - `wokok version`, `wokok sshport N`; real SSH port detected via ss; foreign authorized_keys are preserved
