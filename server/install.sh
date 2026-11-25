@@ -35,6 +35,21 @@ die()  { printf '%s✖ %s%s\n' "$ERR" "$*" "$R" >&2; exit 1; }
 
 [ "$(id -u)" -eq 0 ] || die "Run as root: curl -fsSL ... | sudo bash"
 
+LOG=/tmp/wokok-install.log; : > "$LOG"
+on_err() {
+  printf '
+%s✖ Install stopped at line %s: %s%s
+' "$ERR" "$1" "$2" "$R" >&2
+  [ -s "$LOG" ] && { printf '%s--- last lines of %s ---%s
+' "$DIM" "$LOG" "$R" >&2; tail -n 15 "$LOG" >&2; }
+  printf '
+  Re-run the same command after fixing it. If Wokok was already set up, your link is still there:
+    %ssudo wokok link%s
+  Please report it: https://github.com/%s/issues
+' "$C1" "$R" "$REPO" >&2
+}
+trap 'on_err $LINENO "$BASH_COMMAND"' ERR
+
 if [ "$UNINSTALL" = 1 ]; then
   if command -v wokok >/dev/null; then exec wokok uninstall --yes; fi
   die "wokok CLI not found, nothing to uninstall"
@@ -53,7 +68,6 @@ EOF
 
 # ---------- packages ----------
 # Only install what is missing; never hide errors; survive a half-broken dpkg.
-LOG=/tmp/wokok-install.log; : > "$LOG"
 REQ=(curl jq openssl unzip); OPT=(qrencode)
 missing=(); for t in "${REQ[@]}" "${OPT[@]}"; do command -v "$t" >/dev/null || missing+=("$t"); done
 
@@ -122,10 +136,11 @@ fi
 # ---------- xray ----------
 if ! command -v xray >/dev/null; then
   say "Installing Xray-core (official XTLS installer)…"
-  bash -c "$(curl -fsSL https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install >/dev/null
+  bash -c "$(curl -fsSL https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install >>"$LOG" 2>&1
 fi
 XRAY="$(command -v xray || echo /usr/local/bin/xray)"
-ok "Xray $("$XRAY" version | head -1 | awk '{print $2}')"
+[ -x "$XRAY" ] || die "Xray install failed (see $LOG)"
+ok "Xray $("$XRAY" version | head -1 | awk '{print $2}' || true)"
 
 # ---------- port ----------
 port_busy() { ss -ltnH "sport = :$1" 2>/dev/null | grep -q .; }
@@ -140,14 +155,18 @@ ETC=/etc/wokok
 mkdir -p "$ETC/users"
 chmod 700 "$ETC"
 if [ ! -f "$ETC/server.json" ]; then
-  KEYS="$("$XRAY" x25519)"
+  KEYS="$("$XRAY" x25519 2>&1)"
   PRIV="$(printf '%s\n' "$KEYS" | awk -F': *' '/^Private ?[Kk]ey/{print $2; exit}')"
   PUB="$(printf '%s\n' "$KEYS" | awk -F': *' '/^(Public ?[Kk]ey|Password)/{print $2; exit}')"
-  [ -n "$PRIV" ] && [ -n "$PUB" ] || die "Could not parse 'xray x25519' output"
+  [ -n "$PRIV" ] && [ -n "$PUB" ] || die "Could not parse 'xray x25519' output: $KEYS"
   SID="$(openssl rand -hex 8)"
-  IP="$(curl -4 -fsS --max-time 8 https://api.ipify.org || curl -4 -fsS --max-time 8 https://ifconfig.me || hostname -I | awk '{print $1}')"
+  IP="${WOKOK_HOST:-}"; [ -n "$IP" ] || IP="$(curl -4 -fsS --max-time 8 https://api.ipify.org || curl -4 -fsS --max-time 8 https://ifconfig.me || hostname -I | awk '{print $1}' || true)"
+  [ -n "$IP" ] || die "Could not detect the public IP. Re-run with WOKOK_HOST=1.2.3.4"
   [ -n "$NAME" ] || NAME="Wokok $(hostname -s)"
-  SSHPORT="$(sshd -T 2>/dev/null | awk '/^port /{print $2; exit}')"; SSHPORT="${SSHPORT:-22}"
+  # sshd -T fails on many Ubuntu images (socket activation, no /run/sshd) - never let that abort us.
+  SSHPORT="$( (sshd -T 2>/dev/null || true) | awk '/^port /{print $2; exit}')"
+  [ -n "$SSHPORT" ] || SSHPORT="$(awk '/^[[:space:]]*Port[[:space:]]+[0-9]+/{print $2; exit}' /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf 2>/dev/null || true)"
+  SSHPORT="${SSHPORT:-22}"
   jq -n --arg ip "$IP" --argjson port "$PORT" --arg sni "$SNI" --arg priv "$PRIV" --arg pub "$PUB" \
         --arg sid "$SID" --arg name "$NAME" --argjson ssh "$SSH_FALLBACK" --argjson sshport "$SSHPORT" \
     '{host:$ip,port:$port,sni:$sni,privateKey:$priv,publicKey:$pub,shortId:$sid,name:$name,ssh:($ssh==1),sshPort:$sshport}' \
@@ -183,19 +202,24 @@ if command -v firewall-cmd >/dev/null && firewall-cmd --state >/dev/null 2>&1; t
 fi
 
 systemctl enable xray >/dev/null 2>&1 || true
-systemctl restart xray
+systemctl restart xray || true
 sleep 1
-systemctl is-active --quiet xray || die "Xray failed to start: journalctl -u xray -n 50"
+systemctl is-active --quiet xray || { journalctl -u xray -n 15 --no-pager >&2 || true; die "Xray failed to start (log above). Your link still works once it starts: sudo wokok link"; }
 ok "Xray Reality is listening on :$(jq -r .port "$ETC/server.json") (disguised as $(jq -r .sni "$ETC/server.json"))"
 
+trap - ERR
 echo
 wokok link me
 cat <<EOF
+${C2}════════════════════════════════════════════════════════════${R}
+${C2}  Lost the link? Get it again any time on this server:${R}
+     ${C1}sudo wokok link${R}            (also saved in /root/wokok-links.txt)
 
-${C2}Next:${R}
-  1. Install the Chrome helper on your PC:   ${DIM}https://github.com/$REPO#-2-your-computer${R}
-  2. Open the Wokok extension → paste the ${C1}wokok://${R} link above.
-  3. Give friends their own key:  ${C1}wokok add alice${R}   (revoke: ${C1}wokok del alice${R})
+${C2}  Next:${R}
+  1. On your PC install the helper:  https://github.com/$REPO#-2-your-computer
+  2. Click the wok icon in Chrome → paste the ${C1}wokok://${R} link above.
+  3. Key for a friend:  ${C1}sudo wokok add alice${R}   (revoke: ${C1}sudo wokok del alice${R})
 
   ${DIM}The vless:// link also works in v2rayN, Hiddify, Streisand, NekoBox — phones included.${R}
+${C2}════════════════════════════════════════════════════════════${R}
 EOF

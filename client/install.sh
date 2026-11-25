@@ -82,7 +82,7 @@ ${Y}      ssh root@YOUR_SERVER_IP
       curl -fsSL $RAW/server/install.sh | sudo bash${R}
 
       After ~30 s it prints a link that starts with  wokok://  - copy it.
-${D}      Already installed?  Show the link again:   sudo wokok link me
+${D}      Lost the link / already installed?   sudo wokok link
       Link for a friend:                       sudo wokok add alice${R}
 
 ${C1}  [2/3] CHROME: load the extension (once)${R}

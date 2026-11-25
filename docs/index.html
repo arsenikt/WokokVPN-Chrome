@@ -28,6 +28,7 @@ h1 span{background:linear-gradient(135deg,var(--chili),var(--fire),var(--gold));
 .cmd{display:flex;align-items:center;gap:10px;max-width:780px;margin:0 auto 10px;padding:12px 14px;border-radius:14px;background:rgba(0,0,0,.55);border:1px solid rgba(255,122,26,.4);backdrop-filter:blur(10px);text-align:left}
 .cmd code{flex:1;min-width:0;font:13.5px/1.5 Consolas,monospace;color:var(--gold);white-space:normal;overflow-wrap:anywhere}
 .cmd button{border:0;border-radius:10px;padding:8px 14px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--chili),var(--fire));cursor:pointer}
+.hint2{font-size:13px;color:var(--muted);margin:-2px 0 6px;white-space:pre-wrap}
 .step{font-size:13px;color:var(--muted);margin:14px 0 6px;text-transform:uppercase;letter-spacing:1.5px}
 .btns{margin-top:26px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 .btn{padding:12px 22px;border-radius:12px;text-decoration:none;font-weight:700;border:1px solid var(--line);background:var(--glass);color:var(--paper)}
@@ -56,6 +57,7 @@ footer{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px}
   <p class="sub" data-en="Your own unblockable VPN for Chrome. One command on the server, one on your PC." data-ru="Свой неблокируемый VPN для Chrome. Одна команда на сервере, одна на ПК."></p>
   <div class="step" data-en="1 · on your server" data-ru="1 · на сервере"></div>
   <div class="cmd"><code>curl -fsSL https://raw.githubusercontent.com/arsenikt/WokokVPN-Chrome/main/server/install.sh | sudo bash</code><button>Copy</button></div>
+  <div class="hint2" data-en="Prints your wokok:// link. Lost it? Run  sudo wokok link  on the server any time." data-ru="Выдаст ссылку wokok://. Потеряли? На сервере в любой момент:  sudo wokok link"></div>
   <div class="step" data-en="2 · on your computer" data-ru="2 · на компьютере"></div>
   <div class="tabs"><button class="on" data-os="win">Windows</button><button data-os="nix">macOS / Linux</button></div>
   <div class="cmd"><code id="client"></code><button>Copy</button></div>

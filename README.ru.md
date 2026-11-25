@@ -41,6 +41,13 @@ curl -fsSL https://raw.githubusercontent.com/arsenikt/WokokVPN-Chrome/main/serve
 
 Примерно через 30 секунд вы получите **ссылку `wokok://`**, **ссылку `vless://`** и **QR-код**.
 
+> 🔑 **Потеряли ссылку или закрыли терминал?** Её всегда можно получить снова на сервере:
+> ```bash
+> sudo wokok link          # ваша ссылка + QR
+> sudo wokok link alice    # ссылка друга
+> ```
+> Все ссылки также сохранены в `/root/wokok-links.txt`.
+
 <details><summary>Параметры</summary>
 
 ```bash
@@ -93,7 +100,7 @@ curl -fsSL https://raw.githubusercontent.com/arsenikt/WokokVPN-Chrome/main/clien
 wokok add alice      # ключ для друга + ссылка + QR
 wokok del alice      # отозвать
 wokok list           # у кого есть доступ
-wokok link me        # показать свою ссылку снова
+wokok link           # снова показать ссылку + QR (также /root/wokok-links.txt)
 wokok status         # проверка здоровья
 wokok sni www.apple.com   # сменить сайт маскировки
 wokok update         # обновить Xray-core

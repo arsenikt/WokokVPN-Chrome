@@ -101,7 +101,7 @@ Cmd "ssh root@YOUR_SERVER_IP"
 Cmd "curl -fsSL https://raw.githubusercontent.com/$Repo/$Branch/server/install.sh | sudo bash"
 Write-Host ""
 Txt "After ~30 s it prints a link that starts with  wokok://  - copy it."
-Dim "Already installed?  Show the link again:   sudo wokok link me"
+Dim "Lost the link / already installed?   sudo wokok link"
 Dim "Link for a friend:                       sudo wokok add alice"
 
 Step "2/3" "CHROME: load the extension (once)"

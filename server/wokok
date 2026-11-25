@@ -56,7 +56,7 @@ cmd_add() {
 cmd_del() {
   local n="${1:-}"; [ -n "$n" ] || die "Usage: wokok del NAME"; valid_name "$n"
   [ -d "$ETC/users/$n" ] || die "No user '$n'"
-  rm -rf "${ETC:?}/users/$n"; render; reload; ok "Revoked '$n' (Reality + SSH keys)"
+  rm -rf "${ETC:?}/users/$n"; render; save_links 2>/dev/null || true; reload; ok "Revoked '$n' (Reality + SSH keys)"
 }
 
 cmd_list() {
@@ -80,11 +80,29 @@ links() {
   VLESS="vless://$uuid@$(S host):$(S port)?encryption=none&flow=xtls-rprx-vision&security=reality&sni=$(S sni)&fp=chrome&pbk=$(S publicKey)&sid=$(S shortId)&type=tcp#$enc"
 }
 
+# Keep every link in /root/wokok-links.txt so it can always be found again.
+save_links() {
+  local f=/root/wokok-links.txt
+  { printf '# Wokok VPN links (regenerate any time: sudo wokok link NAME)\n'
+    for d in "$ETC"/users/*/; do [ -d "$d" ] || continue; local u; u="$(basename "$d")"; links "$u"
+      printf '\n[%s]\nwokok: %s\nvless: %s\n' "$u" "$WOKOK" "$VLESS"; done; } > "$f.tmp"
+  install -m 600 "$f.tmp" "$f"; rm -f "$f.tmp"
+}
+
 cmd_link() {
-  local n="${1:-me}"; links "$n"
+  local n="${1:-}"
+  if [ -z "$n" ]; then
+    if [ -d "$ETC/users/me" ]; then n=me
+    else n="$(find "$ETC/users" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort | head -1)"; fi
+    [ -n "$n" ] || die "No users yet: sudo wokok add me"
+  fi
+  [ -d "$ETC/users/$n" ] || { printf '%sNo user "%s". Existing:%s\n' "$ERR" "$n" "$R"; cmd_list; exit 1; }
+  links "$n"
   printf '\n%s🔥 Wokok link for "%s" (paste into the Chrome extension):%s\n%s\n' "$C1" "$n" "$R" "$WOKOK"
   printf '\n%s📱 vless:// link (v2rayN / Hiddify / Streisand / NekoBox):%s\n%s\n\n' "$C2" "$R" "$VLESS"
   if command -v qrencode >/dev/null; then qrencode -t ANSIUTF8 -m 1 "$VLESS"; printf '%s   ↑ scan with a phone VPN app%s\n' "$DIM" "$R"; fi
+  save_links 2>/dev/null || true
+  printf '%s   Show again: sudo wokok link %s   ·   all links: /root/wokok-links.txt%s\n' "$DIM" "$n" "$R"
 }
 
 cmd_status() {
@@ -114,7 +132,7 @@ ${C1}wokok${R} — Wokok VPN server control
   wokok add NAME      create a key for a friend and print the link + QR
   wokok del NAME      revoke a key
   wokok list          list keys
-  wokok link [NAME]   show link + QR again (default: me)
+  wokok link [NAME]   show your link + QR again (also in /root/wokok-links.txt)
   wokok status        health check
   wokok sni HOST      change the site Reality disguises as
   wokok render        rebuild configs from /etc/wokok
@@ -128,7 +146,7 @@ case "${1:-help}" in
   add) cmd_add "${2:-}" "${3:-}" ;;
   del|rm|revoke) cmd_del "${2:-}" ;;
   list|ls) cmd_list ;;
-  link|qr|show) cmd_link "${2:-me}" ;;
+  link|links|qr|show) cmd_link "${2:-}" ;;
   status) cmd_status ;;
   sni) cmd_sni "${2:-}" ;;
   render) render ;;

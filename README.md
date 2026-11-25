@@ -43,6 +43,13 @@ curl -fsSL https://raw.githubusercontent.com/arsenikt/WokokVPN-Chrome/main/serve
 
 About 30 seconds later you get a **`wokok://` link**, a **`vless://` link** and a **QR code**.
 
+> 🔑 **Lost the link or closed the terminal?** Get it again any time on the server:
+> ```bash
+> sudo wokok link          # your link + QR
+> sudo wokok link alice    # a friend's link
+> ```
+> All links are also saved in `/root/wokok-links.txt`.
+
 <details><summary>Options</summary>
 
 ```bash
@@ -96,7 +103,7 @@ This downloads the official [Xray-core](https://github.com/XTLS/Xray-core) and r
 wokok add alice      # new key for a friend + link + QR
 wokok del alice      # revoke
 wokok list           # who has access
-wokok link me        # show your link again
+wokok link           # show your link + QR again (also /root/wokok-links.txt)
 wokok status         # health check
 wokok sni www.apple.com   # change disguise site
 wokok update         # update Xray-core

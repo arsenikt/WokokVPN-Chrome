@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.3
+- Server installer no longer dies silently: fixed abort when `sshd -T` fails (Ubuntu socket activation), clear error with line + log on any failure
+- `sudo wokok link` shows your link again any time; all links saved to /root/wokok-links.txt
+- Link recovery documented in README, website, client installers and the extension
+
 ## 2.1.2
 - Client installers end with a clear 3-step guide: server command, Chrome, connect
 - Extension onboarding shows the server install command (click to copy) before asking for the wokok:// link
