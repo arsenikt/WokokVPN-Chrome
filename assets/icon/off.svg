@@ -12,11 +12,11 @@
   <path d="M92 124c-4-4-3-8 1-11 0 3 2 4 3 2 3 3 3 7 0 9z" fill="#a0a0a8"/>
   <!-- shield rising from the wok -->
   <path d="M64 6 L100 18 V44 C100 64 84 76 64 84 C44 76 28 64 28 44 V18 Z" fill="url(#sh)" stroke="#1e1a18" stroke-width="4" stroke-linejoin="round"/>
-  <g fill="none" stroke="#2a1206" stroke-width="6" stroke-linecap="round">
+  <g fill="none" stroke="#2a2a30" stroke-width="6" stroke-linecap="round">
     <path d="M44 38a28 28 0 0 1 40 0"/>
     <path d="M51 47a17 17 0 0 1 26 0"/>
   </g>
-  <circle cx="64" cy="57" r="5" fill="#2a1206"/>
+  <circle cx="64" cy="57" r="5" fill="#2a2a30"/>
   <!-- handle -->
   <path d="M108 70 L125 60" stroke="#1e1a18" stroke-width="9" stroke-linecap="round"/>
   <path d="M108 70 L125 60" stroke="#4a423e" stroke-width="4" stroke-linecap="round"/>
