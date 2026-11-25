@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/img/banner.png" alt="Wokok VPN" width="100%">
+<img src="docs/img/logo.png" alt="Wokok VPN" width="160">
 
 # 🥡 Wokok VPN
 

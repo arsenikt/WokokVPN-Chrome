@@ -1,23 +1,21 @@
-# Renders assets/icon/{on,off}.svg -> transparent PNGs (headless Chrome + Pillow).
-# Usage: python tools/make-icons.py
-import os, subprocess, tempfile, shutil, pathlib
-from PIL import Image
+# Cuts the 3D glass icon out of assets/gemini/logo.png onto a transparent background
+# and writes all extension / site / README icon sizes.  Usage: python tools/make-icons.py
+import pathlib
+from PIL import Image, ImageDraw, ImageEnhance
 root = pathlib.Path(__file__).resolve().parent.parent
-chrome = os.environ.get("CHROME") or next(p for p in [
-    r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-    "/usr/bin/google-chrome"] if os.path.exists(p))
-tmp = pathlib.Path(tempfile.mkdtemp())
-for v in ("on", "off"):
-    big = tmp / f"{v}.png"
-    subprocess.run([chrome, "--headless=new", f"--user-data-dir={tmp/'prof'}", "--disable-gpu",
-        "--hide-scrollbars", "--default-background-color=00000000", "--force-device-scale-factor=8",
-        "--window-size=128,128", f"--screenshot={big}", (root/"assets/icon"/f"{v}.svg").as_uri()],
-        check=True, capture_output=True)
-    im = Image.open(big).convert("RGBA")
+BOX, RAD = (185, 185, 839, 839), 116  # rounded tile inside the 1024px source
+
+im = Image.open(root / "assets/gemini/logo.png").convert("RGBA").crop(BOX)
+w, h = im.size; k = 4
+mask = Image.new("L", (w * k, h * k), 0)
+ImageDraw.Draw(mask).rounded_rectangle((0, 0, w * k - 1, h * k - 1), RAD * k, fill=255)
+im.putalpha(mask.resize((w, h), Image.LANCZOS))
+on = im.resize((1024, 1024), Image.LANCZOS)
+off = ImageEnhance.Brightness(ImageEnhance.Color(on).enhance(0)).enhance(0.75)
+off.putalpha(on.getchannel("A"))
+
+on.save(root / "assets/icon/on-1024.png", optimize=True)
+on.resize((512, 512), Image.LANCZOS).save(root / "docs/img/logo.png", optimize=True)
+for name, src in (("on", on), ("off", off)):
     for s in (16, 32, 48, 128):
-        im.resize((s, s), Image.LANCZOS).save(root/f"extension/icons/{v}{s}.png", optimize=True)
-    if v == "on":
-        im.resize((512, 512), Image.LANCZOS).save(root/"docs/img/logo.png", optimize=True)
-        im.save(root/"assets/icon/on-1024.png", optimize=True)
-shutil.rmtree(tmp, ignore_errors=True)
+        src.resize((s, s), Image.LANCZOS).save(root / f"extension/icons/{name}{s}.png", optimize=True)
