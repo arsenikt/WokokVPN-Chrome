@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.1
+- Website: install commands wrap instead of showing horizontal scrollbars
+- Tip jar is now a tiny collapsible 🥡 link (website, README, extension settings), no big image
+
 ## 2.1.0
 - 🥡 "Buy the author a wok": a low-key tip jar (EVM, Solana, TRON) in the README, on the website and in the extension settings
 - New Gemini artwork: the wok tip jar

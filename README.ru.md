@@ -135,23 +135,18 @@ macOS/Linux: `curl -fsSL https://raw.githubusercontent.com/arsenikt/WokokVPN-Chr
 Wokok — инструмент для приватного доступа к собственному серверу. Соблюдайте законы своей страны.
 </details>
 
-## 🥡 На покупку вока
-
-<img src="docs/img/wok-jar.jpg" alt="" width="360" align="right">
-
-Wokok бесплатный и останется таким. Если он вас выручил и хочется скинуться **на новый вок** (старый уже перегревается от трафика), вот копилка. Звёздочка ⭐ тоже греет!
-
-| Сеть | |
-|---|---|
-| **EVM** (ETH · BSC · Polygon · Base · Arbitrum…) | `0x0aA2d41976f087763a354d598D32c21E1983CbFD` |
-| **Solana** | `E1M7Ztc1MGnc587mmhk2dqBn2rWc4dXyx8huQ2HHpQjt` |
-| **TRON** (USDT TRC-20) | `TXTrfbxAuy63ngzfWNiqubb2y2DHVqWbg9` |
-
-<br clear="right">
-
 ## 🤝 Участие
 
 PR приветствуются: новые пресеты, переводы, порт под Firefox. Если Wokok вас выручил, поставьте ⭐, так проект найдут другие.
+
+<details><summary>🥡 На покупку вока</summary>
+
+Бесплатно навсегда. Если Wokok выручил, киньте монетку в вок, а то старый уже перегревается от трафика.
+
+- **EVM** (ETH · BSC · Base · Polygon): `0x0aA2d41976f087763a354d598D32c21E1983CbFD`
+- **Solana**: `E1M7Ztc1MGnc587mmhk2dqBn2rWc4dXyx8huQ2HHpQjt`
+- **TRON** (USDT TRC-20): `TXTrfbxAuy63ngzfWNiqubb2y2DHVqWbg9`
+</details>
 
 ## Лицензия
 
