@@ -2,7 +2,7 @@
 # Chrome talks to it over stdin/stdout; it runs xray (Reality) or ssh -D (fallback) as a detached process.
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-$VERSION = "2.1.4"
+$VERSION = "2.1.5"
 $BASE_PORT = 10808   # preferred local SOCKS port; next free one is used if busy
 $SOCKS = $BASE_PORT
 $D    = Join-Path $env:LOCALAPPDATA "WokokVPN"
@@ -90,6 +90,7 @@ function Wait-Up($procId) {
 
 function Start-Reality($s) {
   if (-not (Test-Path $XRAY)) { throw "xray.exe not found - rerun the installer" }
+  if ((Test-Port $s.host ([int]$s.port) 3500) -lt 0) { throw "server port $($s.port) is unreachable: open TCP $($s.port) in your VPS firewall/provider panel, or check that Xray runs (sudo wokok status)" }
   $cfg = @{
     log = @{ loglevel = "warning"; error = (Join-Path $RUN "xray.log") }
     inbounds = @(@{ listen = "127.0.0.1"; port = $SOCKS; protocol = "socks"; settings = @{ udp = $true }
@@ -108,6 +109,7 @@ function Start-Reality($s) {
 function Start-Ssh($s) {
   if (-not $s.ssh) { throw "no SSH fallback in this link" }
   if (-not (Test-Path $SSH)) { throw "Windows OpenSSH client is missing" }
+  if ((Test-Port $s.host ([int]$s.ssh.port) 3500) -lt 0) { throw "SSH port $($s.ssh.port) is unreachable (check the real SSH port of your server)" }
   $key = Join-Path $RUN "ssh_key"
   [IO.File]::WriteAllBytes($key, [Convert]::FromBase64String($s.ssh.key))
   & icacls.exe $key /inheritance:r /grant:r "$($env:USERNAME):F" 2>&1 | Out-Null
@@ -135,7 +137,7 @@ function Connect($s, $prefer) {
         return @{ ok = $true; connected = $true; mode = $mode; socksPort = $SOCKS; ping = $r.ms }
       }
       if (Test-Alive $r.pid) { Stop-Process -Id $r.pid -Force -ErrorAction SilentlyContinue }
-      $errors += "$($mode): no internet through tunnel"
+      $errors += "$($mode): connected, but no internet through the tunnel (wrong keys, SNI or server time?)"
     } catch { $errors += "$($mode): $($_.Exception.Message)" }
   }
   return @{ ok = $false; connected = $false; error = ($errors -join "; ") }

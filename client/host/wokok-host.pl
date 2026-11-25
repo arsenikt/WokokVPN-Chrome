@@ -4,7 +4,7 @@ use strict; use warnings;
 use JSON::PP; use IO::Socket::INET; use POSIX qw(setsid); use Time::HiRes qw(time sleep);
 use MIME::Base64 qw(decode_base64);
 
-my $VERSION = "2.1.4";
+my $VERSION = "2.1.5";
 my $BASE_PORT = 10808;   # preferred local SOCKS port; next free one is used if busy
 my $SOCKS = $BASE_PORT;
 my $D = ($^O eq 'darwin') ? "$ENV{HOME}/Library/Application Support/WokokVPN" : ($ENV{XDG_DATA_HOME} || "$ENV{HOME}/.local/share") . "/wokokvpn";
@@ -47,6 +47,8 @@ sub wait_up { my $pid = shift;
   for (1..20) { sleep 0.3; return -1 unless alive($pid); return tunnel_ms(6) if port_ms('127.0.0.1', $SOCKS, 0.3) >= 0 } -1 }
 
 sub start_reality { my $s = shift; die "xray not found - rerun the installer\n" unless -x $XRAY;
+  die "server port $s->{port} is unreachable: open TCP $s->{port} in your VPS firewall/provider panel, or check that Xray runs (sudo wokok status)
+" if port_ms($s->{host}, $s->{port}, 3.5) < 0;
   my $cfg = { log => { loglevel => 'warning', error => "$RUN/xray.log" },
     inbounds => [{ listen => '127.0.0.1', port => $SOCKS, protocol => 'socks', settings => { udp => JSON::PP::true },
       sniffing => { enabled => JSON::PP::true, destOverride => ['http','tls','quic'], routeOnly => JSON::PP::true } }],
@@ -58,6 +60,8 @@ sub start_reality { my $s = shift; die "xray not found - rerun the installer\n" 
   my $pid = spawn_detached($XRAY, 'run', '-c', "$RUN/xray.json"); ($pid, wait_up($pid)) }
 
 sub start_ssh { my $s = shift; die "no SSH fallback in this link\n" unless $s->{ssh};
+  die "SSH port $s->{ssh}{port} is unreachable (check the real SSH port of your server)
+" if port_ms($s->{host}, $s->{ssh}{port}, 3.5) < 0;
   my $key = "$RUN/ssh_key"; spew($key, decode_base64($s->{ssh}{key})); chmod 0600, $key;
   my $pid = spawn_detached('ssh', '-i', $key, '-N', '-T', '-D', "127.0.0.1:$SOCKS", '-p', $s->{ssh}{port},
     '-o', 'IdentitiesOnly=yes', '-o', 'BatchMode=yes', '-o', 'ExitOnForwardFailure=yes',
@@ -74,7 +78,7 @@ sub connect_ { my ($s, $prefer) = @_; stop_tunnel(); stop_orphans(); sleep 0.2;
     if ($@) { chomp(my $e = $@); push @err, "$mode: $e"; next }
     if ($ms >= 0) { spew($STATE, $J->encode({ pid => $pid, mode => $mode, since => now_ms(), server => $s->{host}, port => $SOCKS }));
       return { ok => JSON::PP::true, connected => JSON::PP::true, mode => $mode, socksPort => $SOCKS, ping => $ms } }
-    kill('TERM', $pid) if alive($pid); push @err, "$mode: no internet through tunnel";
+    kill('TERM', $pid) if alive($pid); push @err, "$mode: connected, but no internet through the tunnel (wrong keys, SNI or server time?)";
   }
   return { ok => JSON::PP::false, connected => JSON::PP::false, error => join('; ', @err) } }
 
