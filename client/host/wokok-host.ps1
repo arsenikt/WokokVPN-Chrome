@@ -2,7 +2,7 @@
 # Chrome talks to it over stdin/stdout; it runs xray (Reality) or ssh -D (fallback) as a detached process.
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-$VERSION = "2.1.10"
+$VERSION = "2.1.11"
 $BASE_PORT = 10808   # preferred local SOCKS port; next free one is used if busy
 $SOCKS = $BASE_PORT
 $D    = Join-Path $env:LOCALAPPDATA "WokokVPN"
@@ -106,15 +106,41 @@ function Start-Reality($s) {
   return @{ pid = $procId; ms = (Wait-Up $procId) }
 }
 
+$script:FoundSshPort = $null
+# Identify the real SSH port by its "SSH-" banner when the one in the link does not answer.
+function Find-SshPort($h, $skip) {
+  $cand = @(22, 2222, 22222, 5223, 2200, 222, 2022, 22000, 8022, 10022) | Where-Object { $_ -ne $skip }
+  $jobs = @()
+  foreach ($p in $cand) { $c = New-Object Net.Sockets.TcpClient; $jobs += @{ p = $p; c = $c; t = $c.ConnectAsync($h, $p) } }
+  try { [void][Threading.Tasks.Task]::WaitAll(@($jobs | ForEach-Object { $_.t }), 2000) } catch {}
+  $found = $null
+  foreach ($j in $jobs) {
+    if (-not $found -and $j.t.Status -eq "RanToCompletion" -and $j.c.Connected) {
+      try {
+        $st = $j.c.GetStream(); $st.ReadTimeout = 1500
+        $buf = New-Object byte[] 4; $n = $st.Read($buf, 0, 4)
+        if ($n -ge 3 -and [Text.Encoding]::ASCII.GetString($buf, 0, $n).StartsWith("SSH")) { $found = $j.p }
+      } catch {}
+    }
+  }
+  foreach ($j in $jobs) { try { $j.c.Dispose() } catch {} }
+  return $found
+}
+
 function Start-Ssh($s) {
   if (-not $s.ssh) { throw "no SSH fallback in this link" }
   if (-not (Test-Path $SSH)) { throw "Windows OpenSSH client is missing" }
-  if ((Test-Port $s.host ([int]$s.ssh.port) 3500) -lt 0) { throw "SSH port $($s.ssh.port) is unreachable (set the real SSH port in extension settings, or re-run the server installer to get a fresh link)" }
+  $sshPort = [int]$s.ssh.port
+  if ((Test-Port $s.host $sshPort 3500) -lt 0) {
+    $alt = Find-SshPort $s.host $sshPort
+    if (-not $alt) { throw "no SSH server found on $($s.host) (port $sshPort is closed; also tried common ports). Check the SSH port in extension settings or re-run the server installer for a fresh link" }
+    $sshPort = [int]$alt; $script:FoundSshPort = $sshPort
+  }
   $key = Join-Path $RUN "ssh_key"
   [IO.File]::WriteAllBytes($key, [Convert]::FromBase64String($s.ssh.key))
   & icacls.exe $key /inheritance:r /grant:r "$($env:USERNAME):F" 2>&1 | Out-Null
   $known = Join-Path $D "known_hosts"
-  $a = @("-i", "`"$key`"", "-N", "-T", "-D", "127.0.0.1:$SOCKS", "-p", $s.ssh.port,
+  $a = @("-i", "`"$key`"", "-N", "-T", "-D", "127.0.0.1:$SOCKS", "-p", $sshPort,
     "-o", "IdentitiesOnly=yes", "-o", "BatchMode=yes", "-o", "ExitOnForwardFailure=yes",
     "-o", "ServerAliveInterval=20", "-o", "ServerAliveCountMax=3", "-o", "StrictHostKeyChecking=accept-new",
     "-o", "UserKnownHostsFile=`"$known`"", "-E", "`"$(Join-Path $RUN 'ssh.log')`"", "$($s.ssh.user)@$($s.host)")
@@ -134,7 +160,7 @@ function Connect($s, $prefer) {
       $r = if ($mode -eq "reality") { Start-Reality $s } else { Start-Ssh $s }
       if ($r.ms -ge 0) {
         @{ pid = $r.pid; mode = $mode; since = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds(); server = $s.host; port = $SOCKS } | ConvertTo-Json | Set-Content $STATE -Encoding utf8
-        return @{ ok = $true; connected = $true; mode = $mode; socksPort = $SOCKS; ping = $r.ms }
+        return @{ ok = $true; connected = $true; mode = $mode; socksPort = $SOCKS; ping = $r.ms; sshPort = $script:FoundSshPort }
       }
       if (Test-Alive $r.pid) { Stop-Process -Id $r.pid -Force -ErrorAction SilentlyContinue }
       $errors += "$($mode): connected, but no internet through the tunnel (wrong keys, SNI or server time?)"

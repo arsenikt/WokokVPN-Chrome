@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.11
+- Auto-detect the real SSH port: if the port in the link is closed, the helper finds the SSH server by its banner (tries common ports) and the extension saves the right port
+- The extension remembers when Reality is unreachable and goes straight to SSH next time (re-tests Reality every 6 h)
+
 ## 2.1.10
 - Settings: editable SSH port per server (fix a wrong port without a new link)
 - Clearer error when the SSH port is unreachable

@@ -53,9 +53,18 @@ async function connect() {
   const order = [s.autoBest ? await pickFastest(s) : active(s), ...s.servers].filter((v, i, a) => v && a.indexOf(v) === i);
   let r;
   for (const srv of order) {
-    r = await native({ cmd: "connect", server: toHostServer(srv), prefer: s.transport });
+    // Auto-adapt: if Reality was unreachable recently, go straight to SSH (re-test Reality every 6 h).
+    const skipReality = s.transport === "auto" && srv.ssh && srv.pref === "ssh" && Date.now() - (srv.prefAt || 0) < 6 * 3600e3;
+    r = await native({ cmd: "connect", server: toHostServer(srv), prefer: skipReality ? "ssh" : s.transport });
+    if (!(r.ok && r.connected) && skipReality && !r.noHost) r = await native({ cmd: "connect", server: toHostServer(srv), prefer: s.transport });
     if (r.ok && r.connected) {
-      await save({ enabled: true, activeId: srv._id, since: Date.now(), lastMode: r.mode, lastError: null, socksPort: r.socksPort || SOCKS_PORT });
+      const cur = await load();
+      const servers = cur.servers.map((x) => {
+        if (x._id !== srv._id) return x;
+        const keepStamp = skipReality && r.mode === "ssh";
+        return { ...x, pref: r.mode, prefAt: keepStamp ? x.prefAt : Date.now(), ...(r.sshPort ? { ssh: { ...x.ssh, port: r.sshPort } } : {}) };
+      });
+      await save({ servers, enabled: true, activeId: srv._id, since: Date.now(), lastMode: r.mode, lastError: null, socksPort: r.socksPort || SOCKS_PORT });
       break;
     }
     if (r.noHost || !s.autoBest) break;

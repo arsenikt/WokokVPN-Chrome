@@ -1,10 +1,10 @@
 #!/usr/bin/env perl
 # Wokok VPN native messaging host (macOS / Linux). Core Perl only: no installs needed.
 use strict; use warnings;
-use JSON::PP; use IO::Socket::INET; use POSIX qw(setsid); use Time::HiRes qw(time sleep);
+use JSON::PP; use IO::Socket::INET; use IO::Select; use POSIX qw(setsid); use Time::HiRes qw(time sleep);
 use MIME::Base64 qw(decode_base64);
 
-my $VERSION = "2.1.10";
+my $VERSION = "2.1.11";
 my $BASE_PORT = 10808;   # preferred local SOCKS port; next free one is used if busy
 my $SOCKS = $BASE_PORT;
 my $D = ($^O eq 'darwin') ? "$ENV{HOME}/Library/Application Support/WokokVPN" : ($ENV{XDG_DATA_HOME} || "$ENV{HOME}/.local/share") . "/wokokvpn";
@@ -59,11 +59,24 @@ sub start_reality { my $s = shift; die "xray not found - rerun the installer\n" 
   spew("$RUN/xray.json", $J->encode($cfg));
   my $pid = spawn_detached($XRAY, 'run', '-c', "$RUN/xray.json"); ($pid, wait_up($pid)) }
 
+my $FOUND_SSH;
+# Identify the real SSH port by its "SSH-" banner when the one in the link does not answer.
+sub find_ssh_port { my ($h, $skip) = @_;
+  for my $p (grep { $_ != $skip } (22, 2222, 22222, 5223, 2200, 222, 2022, 22000, 8022, 10022)) {
+    my $sock = IO::Socket::INET->new(PeerAddr => $h, PeerPort => $p, Timeout => 0.7) or next;
+    my $ok = 0; if (IO::Select->new($sock)->can_read(1.5)) { sysread($sock, my $b, 4); $ok = 1 if defined $b && $b =~ /^SSH/ }
+    close $sock; return $p if $ok }
+  return undef }
+
 sub start_ssh { my $s = shift; die "no SSH fallback in this link\n" unless $s->{ssh};
-  die "SSH port $s->{ssh}{port} is unreachable (set the real SSH port in extension settings, or re-run the server installer to get a fresh link)
-" if port_ms($s->{host}, $s->{ssh}{port}, 3.5) < 0;
+  my $sshport = $s->{ssh}{port};
+  if (port_ms($s->{host}, $sshport, 3.5) < 0) {
+    my $alt = find_ssh_port($s->{host}, $sshport);
+    die "no SSH server found on $s->{host} (port $sshport is closed; also tried common ports). Check the SSH port in extension settings or re-run the server installer for a fresh link\n" unless $alt;
+    $sshport = $alt; $FOUND_SSH = $alt;
+  }
   my $key = "$RUN/ssh_key"; spew($key, decode_base64($s->{ssh}{key})); chmod 0600, $key;
-  my $pid = spawn_detached('ssh', '-i', $key, '-N', '-T', '-D', "127.0.0.1:$SOCKS", '-p', $s->{ssh}{port},
+  my $pid = spawn_detached('ssh', '-i', $key, '-N', '-T', '-D', "127.0.0.1:$SOCKS", '-p', $sshport,
     '-o', 'IdentitiesOnly=yes', '-o', 'BatchMode=yes', '-o', 'ExitOnForwardFailure=yes',
     '-o', 'ServerAliveInterval=20', '-o', 'ServerAliveCountMax=3', '-o', 'StrictHostKeyChecking=accept-new',
     '-o', "UserKnownHostsFile=$D/known_hosts", '-E', "$RUN/ssh.log", "$s->{ssh}{user}\@$s->{host}");
@@ -77,7 +90,7 @@ sub connect_ { my ($s, $prefer) = @_; stop_tunnel(); stop_orphans(); sleep 0.2;
     my ($pid, $ms) = eval { $mode eq 'reality' ? start_reality($s) : start_ssh($s) };
     if ($@) { chomp(my $e = $@); push @err, "$mode: $e"; next }
     if ($ms >= 0) { spew($STATE, $J->encode({ pid => $pid, mode => $mode, since => now_ms(), server => $s->{host}, port => $SOCKS }));
-      return { ok => JSON::PP::true, connected => JSON::PP::true, mode => $mode, socksPort => $SOCKS, ping => $ms } }
+      return { ok => JSON::PP::true, connected => JSON::PP::true, mode => $mode, socksPort => $SOCKS, ping => $ms, sshPort => $FOUND_SSH } }
     kill('TERM', $pid) if alive($pid); push @err, "$mode: connected, but no internet through the tunnel (wrong keys, SNI or server time?)";
   }
   return { ok => JSON::PP::false, connected => JSON::PP::false, error => join('; ', @err) } }
