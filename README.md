@@ -49,6 +49,8 @@ About 30 seconds later you get a **`wokok://` link**, a **`vless://` link** and 
 > sudo wokok link alice    # a friend's link
 > ```
 > All links are also saved in `/root/wokok-links.txt`.
+>
+> 🔧 **Something broke or you want the latest version?** Just run the same install command again. It updates `wokok`, repairs the config (including the SSH port in your links), keeps all keys and prints your link.
 
 <details><summary>Options</summary>
 

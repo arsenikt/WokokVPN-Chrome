@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # wokok — manage your Wokok VPN server.
 set -euo pipefail
-WOKOK_VERSION="2.1.7"
+WOKOK_VERSION="2.1.9"
 ETC=/etc/wokok
 CFG=/usr/local/etc/xray/config.json
 AUTH=/home/wokok/.ssh/authorized_keys
@@ -16,6 +16,25 @@ say() { printf '%s🥡 %s%s\n' "$C1" "$*" "$R"; }
 S() { jq -r ".$1" "$ETC/server.json"; }
 valid_name() { [[ "$1" =~ ^[A-Za-z0-9_.-]{1,32}$ ]] || die "Name must be 1-32 chars: letters, digits, . _ -"; }
 b64url() { base64 -w0 | tr '+/' '-_' | tr -d '='; }
+
+# The port sshd really listens on (ss is the most reliable source; sshd -T fails on many images).
+detect_sshport() {
+  local p
+  p="$( (ss -ltnpH 2>/dev/null || true) | awk '/sshd/ { n=split($4,a,":"); print a[n]; exit }')"
+  [ -n "$p" ] || p="$( (sshd -T 2>/dev/null || true) | awk '/^port /{print $2; exit}')"
+  [ -n "$p" ] || p="$(awk '/^[[:space:]]*Port[[:space:]]+[0-9]+/{print $2; exit}' /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf 2>/dev/null || true)"
+  printf '%s' "$p"
+}
+# Self-heal: if the SSH port stored in links is not listening here but sshd is elsewhere, fix it.
+fix_sshport() {
+  [ "$(S ssh)" = "true" ] || return 0
+  local cur real; cur="$(S sshPort)"; real="$(detect_sshport)"
+  [ -n "$real" ] && [ "$real" != "$cur" ] || return 0
+  if (ss -ltnH 2>/dev/null || true) | awk -v p=":$cur" '$4 ~ p"$" {f=1} END{exit !f}'; then return 0; fi
+  jq --argjson p "$real" '.sshPort=$p' "$ETC/server.json" > "$ETC/s.tmp" && mv "$ETC/s.tmp" "$ETC/server.json"
+  chmod 600 "$ETC/server.json"
+  printf '%s↻ SSH port in links fixed: %s → %s (the port sshd really listens on)%s\n' "$DIM" "$cur" "$real" "$R" >&2
+}
 
 render() {
   local clients
@@ -68,6 +87,7 @@ cmd_list() {
 }
 
 links() {
+  fix_sshport
   local n="$1" d="$ETC/users/$1"; [ -d "$d" ] || die "No user '$n'"
   local uuid; uuid="$(cat "$d/uuid")"
   local label="$(S name) · $n"

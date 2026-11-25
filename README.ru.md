@@ -47,6 +47,8 @@ curl -fsSL https://raw.githubusercontent.com/arsenikt/WokokVPN-Chrome/main/serve
 > sudo wokok link alice    # ссылка друга
 > ```
 > Все ссылки также сохранены в `/root/wokok-links.txt`.
+>
+> 🔧 **Что-то сломалось или нужна последняя версия?** Просто запустите ту же команду установки ещё раз. Она обновит `wokok`, починит конфиг (включая порт SSH в ссылках), сохранит все ключи и напечатает вашу ссылку.
 
 <details><summary>Параметры</summary>
 

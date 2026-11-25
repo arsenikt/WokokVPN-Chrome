@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "__MSG_name__",
   "short_name": "Wokok VPN",
-  "version": "2.1.8",
+  "version": "2.1.9",
   "description": "__MSG_desc__",
   "default_locale": "en",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA21M28eohYTpZqMQXmT8aS9ItDsYQawoOmcvLp612AIc3etmmve8Il2ICagEmX4/vWwtFNGJIGETnsNnCc8O81M26TpHizZw+FIA+FpGOhWQIYBx7WgKGia48O2ddLlYvVhzhI2CVjTWD1lZ2WsaYG1wrhp47iLM4ZL5uTzGWTF7QXW10sSfOv8BYtM0aFuF+gMaNYRtBfpu+lBIJ7XGQvG0QlAPlIUl0GxIpMSLQHilkLrDqvJAioAt2uVwK8HHEr4Uj5EOnf1he8Xgq85XBkZfu9RbPXtxG1CXgu37+kFdFora2Kqu88yfr+EK3E1Pt2uabEXVF1TmcQpHdXeD0JwIDAQAB",

@@ -153,6 +153,8 @@ fi
 
 # ---------- keys & config ----------
 ETC=/etc/wokok
+EXISTING=0; [ -f "$ETC/server.json" ] && EXISTING=1
+[ "$EXISTING" = 1 ] && say "Existing Wokok found: updating and repairing it. Your keys and links stay the same."
 mkdir -p "$ETC/users"
 chmod 700 "$ETC"
 if [ ! -f "$ETC/server.json" ]; then
@@ -193,8 +195,17 @@ say "Installing the 'wokok' command…"
 SRC=""
 [ -n "${BASH_SOURCE[0]:-}" ] && [ -f "${BASH_SOURCE[0]}" ] && SRC="$(dirname "${BASH_SOURCE[0]}")/wokok"
 if [ -n "$SRC" ] && [ -f "$SRC" ]; then install -m 755 "$SRC" /usr/local/bin/wokok
-else curl -fsSL "https://raw.githubusercontent.com/$REPO/$BRANCH/server/wokok" -o /usr/local/bin/wokok && chmod 755 /usr/local/bin/wokok
+else
+  # pin to the exact latest commit: raw.githubusercontent.com caches branch URLs for minutes
+  REF="$BRANCH"
+  SHA="$( (curl -fsS --max-time 8 "https://api.github.com/repos/$REPO/commits/$BRANCH" 2>/dev/null || true) | jq -r '.sha // empty' 2>/dev/null || true)"
+  [ -n "$SHA" ] && REF="$SHA"
+  TMPCLI="$(mktemp)"
+  curl -fsSL "https://raw.githubusercontent.com/$REPO/$REF/server/wokok" -o "$TMPCLI" || die "Cannot download the wokok command from GitHub"
+  bash -n "$TMPCLI" || die "Downloaded wokok command looks broken"
+  install -m 755 "$TMPCLI" /usr/local/bin/wokok; rm -f "$TMPCLI"
 fi
+hash -r
 
 [ -n "$(ls -A "$ETC/users")" ] || wokok add me --quiet
 wokok render
@@ -213,7 +224,7 @@ ok "Xray Reality is listening on :$(jq -r .port "$ETC/server.json") (disguised a
 
 trap - ERR
 echo
-wokok link me
+wokok link
 cat <<EOF
 ${C2}════════════════════════════════════════════════════════════${R}
 ${C2}  Lost the link? Get it again any time on this server:${R}

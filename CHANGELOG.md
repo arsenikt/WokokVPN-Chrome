@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.9
+- Re-running the server install command is now a one-step repair/update: pins and installs the latest `wokok`, keeps all keys, fixes the SSH port, prints the link
+- `wokok link` / `add` auto-fix a wrong SSH port in links (detects what sshd really listens on), no manual `wokok sshport` needed
+
 ## 2.1.8
 - Pasting a new link for an already added server now updates it (SSH port, SNI, keys) instead of silently keeping the old data
 
