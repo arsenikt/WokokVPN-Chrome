@@ -4,7 +4,7 @@ use strict; use warnings;
 use JSON::PP; use IO::Socket::INET; use POSIX qw(setsid); use Time::HiRes qw(time sleep);
 use MIME::Base64 qw(decode_base64);
 
-my $VERSION = "2.1.5";
+my $VERSION = "2.1.6";
 my $BASE_PORT = 10808;   # preferred local SOCKS port; next free one is used if busy
 my $SOCKS = $BASE_PORT;
 my $D = ($^O eq 'darwin') ? "$ENV{HOME}/Library/Application Support/WokokVPN" : ($ENV{XDG_DATA_HOME} || "$ENV{HOME}/.local/share") . "/wokokvpn";

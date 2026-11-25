@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.6 (2.1.5)
+- Helper reports the real cause: unreachable server port (VPS firewall) vs. tunnel without internet
+- Firewall hint in server installer, `wokok status`, README (EN/RU)
+
 ## 2.1.4
 - Local SOCKS port is picked automatically: if 10808 is busy (another VPN/proxy), the helper uses the next free port (10809…10857) and the extension follows it
 - Leftover Wokok xray/ssh processes are cleaned up before connecting

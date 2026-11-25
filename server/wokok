@@ -108,6 +108,7 @@ cmd_link() {
 cmd_status() {
   printf '%s%s%s  %s:%s  sni=%s\n' "$C2" "$(S name)" "$R" "$(S host)" "$(S port)" "$(S sni)"
   systemctl is-active --quiet xray && ok "xray running" || printf '%s✖ xray stopped%s\n' "$ERR" "$R"
+  printf '%sIf the extension cannot connect: open TCP %s in your VPS provider firewall (web panel).%s\n' "$DIM" "$(S port)" "$R"
   printf 'users: %s   ssh fallback: %s\n' "$(find "$ETC/users" -mindepth 1 -maxdepth 1 -type d | wc -l)" "$(S ssh)"
 }
 
