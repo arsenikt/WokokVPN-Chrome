@@ -106,7 +106,9 @@ wokok list           # who has access
 wokok link           # show your link + QR again (also /root/wokok-links.txt)
 wokok status         # health check
 wokok sni www.apple.com   # change disguise site
-wokok update         # update Xray-core
+wokok update         # update wokok + Xray-core to the latest (keys and links stay)
+wokok update --check # just check if an update exists
+wokok sshport 5223   # set the real SSH port in your links
 wokok uninstall      # remove everything
 ```
 

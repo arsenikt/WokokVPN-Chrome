@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.7
+- `sudo wokok update` now updates everything: wokok itself, Xray-core and generated configs (keys and links stay); `--check` only looks
+- `wokok version`, `wokok sshport N`; real SSH port detected via ss; foreign authorized_keys are preserved
+
 ## 2.1.6 (2.1.5)
 - Helper reports the real cause: unreachable server port (VPS firewall) vs. tunnel without internet
 - Firewall hint in server installer, `wokok status`, README (EN/RU)

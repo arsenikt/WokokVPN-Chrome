@@ -103,7 +103,9 @@ wokok list           # у кого есть доступ
 wokok link           # снова показать ссылку + QR (также /root/wokok-links.txt)
 wokok status         # проверка здоровья
 wokok sni www.apple.com   # сменить сайт маскировки
-wokok update         # обновить Xray-core
+wokok update         # обновить wokok + Xray-core до последней версии (ключи и ссылки сохраняются)
+wokok update --check # только проверить, есть ли обновление
+wokok sshport 5223   # указать реальный порт SSH в ссылках
 wokok uninstall      # удалить всё
 ```
 
