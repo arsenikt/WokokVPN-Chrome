@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.10
+- Settings: editable SSH port per server (fix a wrong port without a new link)
+- Clearer error when the SSH port is unreachable
+
 ## 2.1.9
 - Re-running the server install command is now a one-step repair/update: pins and installs the latest `wokok`, keeps all keys, fixes the SSH port, prints the link
 - `wokok link` / `add` auto-fix a wrong SSH port in links (detects what sshd really listens on), no manual `wokok sshport` needed

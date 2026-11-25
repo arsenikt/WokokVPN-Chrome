@@ -2,7 +2,7 @@
 # Chrome talks to it over stdin/stdout; it runs xray (Reality) or ssh -D (fallback) as a detached process.
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-$VERSION = "2.1.9"
+$VERSION = "2.1.10"
 $BASE_PORT = 10808   # preferred local SOCKS port; next free one is used if busy
 $SOCKS = $BASE_PORT
 $D    = Join-Path $env:LOCALAPPDATA "WokokVPN"
@@ -109,7 +109,7 @@ function Start-Reality($s) {
 function Start-Ssh($s) {
   if (-not $s.ssh) { throw "no SSH fallback in this link" }
   if (-not (Test-Path $SSH)) { throw "Windows OpenSSH client is missing" }
-  if ((Test-Port $s.host ([int]$s.ssh.port) 3500) -lt 0) { throw "SSH port $($s.ssh.port) is unreachable (check the real SSH port of your server)" }
+  if ((Test-Port $s.host ([int]$s.ssh.port) 3500) -lt 0) { throw "SSH port $($s.ssh.port) is unreachable (set the real SSH port in extension settings, or re-run the server installer to get a fresh link)" }
   $key = Join-Path $RUN "ssh_key"
   [IO.File]::WriteAllBytes($key, [Convert]::FromBase64String($s.ssh.key))
   & icacls.exe $key /inheritance:r /grant:r "$($env:USERNAME):F" 2>&1 | Out-Null

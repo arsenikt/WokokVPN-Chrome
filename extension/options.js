@@ -50,7 +50,17 @@ function renderServers(pings = {}) {
   for (const x of S.servers) {
     const li = document.createElement("li");
     li.className = x._id === S.activeId ? "active" : "";
-    li.innerHTML = `<b></b><small></small><span class="tag">Reality${x.ssh ? " + SSH" : ""}</span><span class="ms"></span><button class="use"></button><button class="del"></button>`;
+    li.innerHTML = `<b></b><small></small><span class="tag">Reality${x.ssh ? " + SSH" : ""}</span>${x.ssh ? '<label class="sshl" title="Port of the SSH fallback">SSH <input class="sshp" type="number" min="1" max="65535"></label>' : ""}<span class="ms"></span><button class="use"></button><button class="del"></button>`;
+    const sp = li.querySelector(".sshp");
+    if (sp) {
+      sp.value = x.ssh.port;
+      sp.onchange = async () => {
+        const v = Math.round(+sp.value);
+        if (!(v >= 1 && v <= 65535)) { sp.value = x.ssh.port; return; }
+        await save({ servers: S.servers.map((y) => (y._id === x._id ? { ...y, ssh: { ...y.ssh, port: v } } : y)) });
+        S = await load();
+      };
+    }
     li.querySelector("b").textContent = x.name;
     li.querySelector("small").textContent = `${x.host}:${x.port}`;
     const p = pings[x._id];
