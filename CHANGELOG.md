@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.0
+- 🥡 "Buy the author a wok": a low-key tip jar (EVM, Solana, TRON) in the README, on the website and in the extension settings
+- New Gemini artwork: the wok tip jar
+- GitHub Sponsor button via FUNDING.yml
+
 ## 2.0.0
 - Public release: VLESS Reality + SSH fallback, one-command server and client installers
 - Smart / All / Except routing, presets, antifilter community list, blocked-site detector

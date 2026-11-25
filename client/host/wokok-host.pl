@@ -4,7 +4,7 @@ use strict; use warnings;
 use JSON::PP; use IO::Socket::INET; use POSIX qw(setsid); use Time::HiRes qw(time sleep);
 use MIME::Base64 qw(decode_base64);
 
-my $VERSION = "2.0.0";
+my $VERSION = "2.1.0";
 my $SOCKS = 10808;
 my $D = ($^O eq 'darwin') ? "$ENV{HOME}/Library/Application Support/WokokVPN" : ($ENV{XDG_DATA_HOME} || "$ENV{HOME}/.local/share") . "/wokokvpn";
 my $RUN = "$D/run"; my $XRAY = "$D/bin/xray"; my $STATE = "$RUN/state.json";

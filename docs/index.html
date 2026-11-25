@@ -40,6 +40,14 @@ h2{font:800 34px/1.2 "Segoe UI",sans-serif;text-align:center;margin:0 0 30px}
 .card i{font-style:normal;font-size:28px}
 .wide{width:100%;border-radius:22px;border:1px solid var(--line);box-shadow:0 30px 80px rgba(255,90,30,.15)}
 footer{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px}
+.wok{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:28px;align-items:center}
+.wok img{width:100%;border-radius:20px;border:1px solid var(--line)}
+.addr{display:flex;align-items:center;gap:8px;margin:8px 0;padding:8px 10px;border-radius:12px;background:rgba(0,0,0,.4);border:1px solid var(--line);cursor:copy}
+.addr b{min-width:64px;color:var(--fire);font-size:13px}.addr code{flex:1;font:12.5px Consolas,monospace;color:var(--gold);overflow-wrap:anywhere}
+.addr span{font-size:12px;color:var(--muted)}
+.wokbtn{position:fixed;right:16px;bottom:16px;padding:8px 14px;border-radius:999px;background:rgba(20,15,12,.85);border:1px solid rgba(255,122,26,.4);color:var(--paper);text-decoration:none;font-size:13px;backdrop-filter:blur(8px);opacity:.75}
+.wokbtn:hover{opacity:1}
+@media(max-width:720px){.wok{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -64,6 +72,17 @@ footer{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px}
   <div class="grid" id="features"></div>
 </section>
 <section><img class="wide" src="img/smart-routing.png" alt="Smart routing"></section>
+<section id="wok"><div class="wok">
+  <img src="img/wok-jar.jpg" alt="">
+  <div>
+    <h2 style="text-align:left" data-en="🥡 Buy the author a wok" data-ru="🥡 На покупку вока"></h2>
+    <p style="color:var(--muted)" data-en="Wokok is free forever. If it saved your evening, toss a coin into the wok: the old one is overheating from all that traffic. Click an address to copy." data-ru="Wokok бесплатный навсегда. Если он вас выручил, киньте монетку в вок: старый уже перегревается от трафика. Нажмите на адрес, чтобы скопировать."></p>
+    <div class="addr"><b>EVM</b><code>0x0aA2d41976f087763a354d598D32c21E1983CbFD</code><span>ETH·BSC·Base</span></div>
+    <div class="addr"><b>Solana</b><code>E1M7Ztc1MGnc587mmhk2dqBn2rWc4dXyx8huQ2HHpQjt</code><span>SOL</span></div>
+    <div class="addr"><b>TRON</b><code>TXTrfbxAuy63ngzfWNiqubb2y2DHVqWbg9</code><span>USDT TRC-20</span></div>
+  </div>
+</div></section>
+<a class="wokbtn" href="#wok" data-en="🥡 buy me a wok" data-ru="🥡 на вок"></a>
 <footer>MIT · <a href="https://github.com/arsenikt/WokokVPN-Chrome">GitHub</a> · powered by Xray-core Reality</footer>
 
 <script>
@@ -85,6 +104,7 @@ document.getElementById("client").textContent=CL[os];document.querySelectorAll("
 document.getElementById("lang").onclick=e=>{e.preventDefault();L=L==="ru"?"en":"ru";render()};
 document.querySelector(".tabs").onclick=e=>{if(e.target.dataset.os){os=e.target.dataset.os;render()}};
 document.querySelectorAll(".cmd button").forEach(b=>b.onclick=()=>{navigator.clipboard.writeText(b.previousElementSibling.textContent);b.textContent="✔";setTimeout(()=>b.textContent="Copy",1400)});
+document.querySelectorAll(".addr").forEach(a=>a.onclick=()=>{navigator.clipboard.writeText(a.querySelector("code").textContent);const s=a.querySelector("span"),t=s.textContent;s.textContent="✔ copied";setTimeout(()=>s.textContent=t,1400)});
 render();
 </script>
 </body>

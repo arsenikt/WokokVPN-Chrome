@@ -126,7 +126,7 @@ export const STR = {
     test: "test", testing: "…", noHost: "Install the helper on this computer (one command):", copy: "Copy", copied: "Copied!",
     welcome: "Paste the link your server printed", add: "Add server", howTo: "How do I get a server?", settings: "Settings",
     blocked: "looks blocked. Route it via VPN?", yes: "Yes", killOn: "Kill switch: tunnel dropped, traffic blocked", fastest: "Fastest",
-    reconnecting: "Tunnel dropped, reconnecting…",
+    reconnecting: "Tunnel dropped, reconnecting…", wok: "Buy the author a wok",
   },
   ru: {
     off: "Вок остыл", on: "Вок горит!", tapOn: "Нажми на вок, чтобы разжечь", tapOff: "Трафик жарится через ваш сервер",
@@ -135,7 +135,7 @@ export const STR = {
     test: "тест", testing: "…", noHost: "Установите помощник на этот компьютер (одна команда):", copy: "Копировать", copied: "Скопировано!",
     welcome: "Вставьте ссылку, которую выдал ваш сервер", add: "Добавить сервер", howTo: "Где взять сервер?", settings: "Настройки",
     blocked: "похоже, заблокирован. Открыть через VPN?", yes: "Да", killOn: "Kill switch: туннель упал, трафик заблокирован", fastest: "Самый быстрый",
-    reconnecting: "Туннель упал, переподключаемся…",
+    reconnecting: "Туннель упал, переподключаемся…", wok: "На покупку вока",
   },
 };
 export function lang(s) { return s.lang || (chrome.i18n.getUILanguage().startsWith("ru") ? "ru" : "en"); }

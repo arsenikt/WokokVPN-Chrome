@@ -12,7 +12,7 @@ function texts() {
   $("speedHint").textContent = L.test; $("wTitle").textContent = L.welcome; $("addBtn").textContent = L.add;
   $("howTo").textContent = L.howTo; $("howTo").href = REPO + "#-quick-start"; $("repo").href = REPO;
   $("nhText").textContent = L.noHost; $("copyCmd").textContent = L.copy; $("bYes").textContent = L.yes;
-  $("opts").title = L.settings;
+  $("opts").title = L.settings; $("wok").title = L.wok;
 }
 
 function renderServers() {
@@ -115,6 +115,7 @@ $("server").addEventListener("change", async (e) => {
 });
 
 $("opts").addEventListener("click", () => chrome.runtime.openOptionsPage());
+$("wok").addEventListener("click", (e) => { e.preventDefault(); chrome.tabs.create({ url: chrome.runtime.getURL("options.html#wok") }); });
 
 $("addBtn").addEventListener("click", async () => {
   try { await addServer($("link").value); $("wErr").textContent = ""; await refresh(); }

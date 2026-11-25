@@ -16,7 +16,8 @@ const T = {
     extras: "Extras", keys: "Alt+Shift+V: VPN on/off · Alt+Shift+S: current site via VPN/direct · Alt+Shift+W: open popup. Right-click any page → Wokok.",
     editKeys: "Edit hotkeys", export: "Export backup", import: "Import backup", hostTitle: "Helper is not installed on this computer",
     hostText: "Wokok needs a tiny helper to run the tunnel. Run one command and reload this page:", del: "Delete", use: "Use",
-    sites: "sites", imported: "Imported ✔" },
+    sites: "sites", imported: "Imported ✔", wokTitle: "🥡 Buy the author a wok",
+    wokText: "Wokok is free forever. If it saved your evening, toss a coin into the wok: the old one is overheating from all that traffic. Click an address to copy." },
   ru: { tag: "Свой Reality VPN для Chrome · жарь трафик через свой вок", servers: "Серверы", add: "Добавить", autoBest: "Автоматически выбирать самый быстрый",
     transport: "Протокол", pingAll: "Пинг всех", serverHint: "Запустите установщик на сервере и вставьте ссылку wokok://, которую он выдаст. Ключ для друга: wokok add ИМЯ",
     routing: "Маршрутизация", all: "Все сайты", smart: "Умный", except: "Все, кроме",
@@ -30,7 +31,8 @@ const T = {
     extras: "Дополнительно", keys: "Alt+Shift+V: вкл/выкл VPN · Alt+Shift+S: текущий сайт через VPN/напрямую · Alt+Shift+W: открыть попап. Правый клик по странице → Wokok.",
     editKeys: "Горячие клавиши", export: "Экспорт бэкапа", import: "Импорт бэкапа", hostTitle: "Помощник не установлен на этом компьютере",
     hostText: "Wokok нужен маленький помощник для туннеля. Выполните одну команду и обновите страницу:", del: "Удалить", use: "Выбрать",
-    sites: "сайтов", imported: "Импортировано ✔" },
+    sites: "сайтов", imported: "Импортировано ✔", wokTitle: "🥡 На покупку вока",
+    wokText: "Wokok бесплатный навсегда. Если он вас выручил, киньте монетку в вок: старый уже перегревается от трафика. Нажмите на адрес, чтобы скопировать." },
 };
 let S, L;
 const lines = (v) => [...new Set(v.split(/[\s,]+/).map(normDomain).filter(Boolean))];
@@ -133,5 +135,10 @@ for (const [id, cmd] of [["cmdWin", INSTALL_WIN], ["cmdNix", INSTALL_NIX]]) {
   $(id).onclick = () => navigator.clipboard.writeText(cmd);
 }
 chrome.runtime.sendNativeMessage(HOST, { cmd: "status" }, () => { $("hostWarn").hidden = !chrome.runtime.lastError; });
+
+document.querySelectorAll(".addr").forEach((a) => (a.onclick = () => {
+  navigator.clipboard.writeText(a.querySelector("code").textContent);
+  a.classList.add("ok"); setTimeout(() => a.classList.remove("ok"), 1200);
+}));
 
 init();

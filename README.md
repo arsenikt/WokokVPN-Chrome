@@ -142,6 +142,20 @@ macOS/Linux: `curl -fsSL https://raw.githubusercontent.com/arsenikt/WokokVPN-Chr
 Wokok is a tool for private access to your own server. Follow the laws of your country.
 </details>
 
+## 🥡 Buy the author a wok
+
+<img src="docs/img/wok-jar.jpg" alt="" width="360" align="right">
+
+Wokok is free and always will be. If it saved your evening and you'd like to chip in **for a new wok** (the old one is overheating from all that traffic), here's the tip jar. A ⭐ works too!
+
+| Network | |
+|---|---|
+| **EVM** (ETH · BSC · Polygon · Base · Arbitrum…) | `0x0aA2d41976f087763a354d598D32c21E1983CbFD` |
+| **Solana** | `E1M7Ztc1MGnc587mmhk2dqBn2rWc4dXyx8huQ2HHpQjt` |
+| **TRON** (USDT TRC-20) | `TXTrfbxAuy63ngzfWNiqubb2y2DHVqWbg9` |
+
+<br clear="right">
+
 ## 🤝 Contributing
 
 PRs are welcome. Good first issues: new presets, translations, Firefox port. If Wokok saved your evening, a ⭐ helps others find it.
