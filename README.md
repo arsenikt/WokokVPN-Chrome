@@ -86,8 +86,6 @@ This downloads the official [Xray-core](https://github.com/XTLS/Xray-core) and r
 
 ## ✨ Features
 
-<img src="docs/img/smart-routing.png" alt="Smart routing" width="100%">
-
 - 🧠 **Three modes.** *All sites* (default: everything goes through the VPN), *Smart* (only selected or blocked sites go through the VPN) and *All except* (everything except your bank list).
 - 🎛 **Ready-made presets.** YouTube, Instagram, X, Discord, ChatGPT / Claude / Gemini, Facebook, LinkedIn, Telegram Web, Spotify / Netflix, dev tools.
 - 📡 **Auto-updated blocklist.** The [antifilter community](https://community.antifilter.download/) list is refreshed every 6 hours.
@@ -120,13 +118,7 @@ wokok uninstall      # remove everything
 
 ## 🔬 How it works
 
-```
-Chrome ──PAC/proxy──► 127.0.0.1:10808 (xray, local SOCKS5)
-                         │  VLESS + XTLS-Vision + Reality (looks like TLS to www.microsoft.com)
-                         ▼
-                    your server :443 ──► internet
-        fallback:  ssh -D 10808 → wokok@server (port-forwarding only, no shell)
-```
+<img src="docs/img/how-it-works.svg" alt="How it works" width="100%">
 
 - **Extension (MV3).** Sets Chrome's proxy (a PAC script for Smart and Except modes) and talks to the helper over Native Messaging.
 - **Helper.** `wokok-host.ps1` on Windows or `wokok-host.pl` on macOS/Linux. It starts `xray` or `ssh` as a detached process and checks that the tunnel really carries traffic (`generate_204` through the tunnel).

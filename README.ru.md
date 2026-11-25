@@ -83,8 +83,6 @@ curl -fsSL https://raw.githubusercontent.com/arsenikt/WokokVPN-Chrome/main/clien
 
 ## ✨ Возможности
 
-<img src="docs/img/smart-routing.png" alt="Умная маршрутизация" width="100%">
-
 - 🧠 **Три режима.** *Все сайты* (по умолчанию: всё идёт через VPN), *Умный* (через VPN только выбранные и заблокированные сайты) и *Все, кроме* (всё, кроме банков).
 - 🎛 **Готовые пресеты.** YouTube, Instagram, X, Discord, ChatGPT / Claude / Gemini, Facebook, LinkedIn, Telegram Web, Spotify / Netflix, инструменты разработчика.
 - 📡 **Автообновляемый список блокировок.** [antifilter community](https://community.antifilter.download/) обновляется каждые 6 часов.
@@ -117,13 +115,7 @@ wokok uninstall      # удалить всё
 
 ## 🔬 Как это работает
 
-```
-Chrome ──PAC/прокси──► 127.0.0.1:10808 (xray, локальный SOCKS5)
-                          │  VLESS + XTLS-Vision + Reality (выглядит как TLS к www.microsoft.com)
-                          ▼
-                     ваш сервер :443 ──► интернет
-        запасной путь: ssh -D 10808 → wokok@server (только проброс портов, без шелла)
-```
+<img src="docs/img/how-it-works.ru.svg" alt="Как это работает" width="100%">
 
 ## ❓ Вопросы
 

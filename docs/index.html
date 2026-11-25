@@ -77,7 +77,7 @@ footer{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px}
   <h2 data-en="Everything a Chrome VPN user wants" data-ru="Всё, что нужно тем, кто сидит через VPN в Chrome"></h2>
   <div class="grid" id="features"></div>
 </section>
-<section><img class="wide" src="img/smart-routing.png" alt="Smart routing"></section>
+<section><h2 data-en="How it works" data-ru="Как это работает"></h2><img class="wide hiw" src="img/how-it-works.svg" data-src-en="img/how-it-works.svg" data-src-ru="img/how-it-works.ru.svg" alt="How it works"></section>
 <div class="tip" id="wok">
   <div class="tipt">🥡 <span data-en="buy the author a wok" data-ru="на покупку вока"></span></div>
   <p data-en="Free forever. If Wokok saved your evening, toss a coin into the wok. Click to copy." data-ru="Бесплатно навсегда. Если Wokok выручил, киньте монетку в вок. Нажмите, чтобы скопировать."></p>
@@ -99,7 +99,7 @@ const F=[["🥷","Reality stealth","Reality-маскировка","Looks like pl
 ["📱","Phone too","И на телефоне","vless:// link works in Hiddify, v2rayN, Streisand.","Ссылка vless:// работает в Hiddify, v2rayN, Streisand."]];
 const CL={win:"irm https://raw.githubusercontent.com/arsenikt/WokokVPN-Chrome/main/client/install.ps1 | iex",nix:"curl -fsSL https://raw.githubusercontent.com/arsenikt/WokokVPN-Chrome/main/client/install.sh | bash"};
 let L=navigator.language.startsWith("ru")?"ru":"en",os=navigator.platform.startsWith("Win")?"win":"nix";
-function render(){document.documentElement.lang=L;document.querySelectorAll("[data-en]").forEach(e=>e.textContent=e.dataset[L]);
+function render(){document.documentElement.lang=L;document.querySelectorAll("[data-src-en]").forEach(e=>e.src=e.dataset["src"+L[0].toUpperCase()+L[1]]);document.querySelectorAll("[data-en]").forEach(e=>e.textContent=e.dataset[L]);
 document.getElementById("lang").textContent=L==="ru"?"English":"Русский";
 document.getElementById("features").innerHTML=F.map(f=>`<div class="card"><i>${f[0]}</i><b>${L==="ru"?f[2]:f[1]}</b><p>${L==="ru"?f[4]:f[3]}</p></div>`).join("");
 document.getElementById("client").textContent=CL[os];document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.os===os));}
