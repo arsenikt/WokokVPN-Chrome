@@ -84,7 +84,7 @@ This downloads the official [Xray-core](https://github.com/XTLS/Xray-core) and r
 
 <img src="docs/img/smart-routing.png" alt="Smart routing" width="100%">
 
-- 🧠 **Three modes.** *All sites*, *Smart* (only selected or blocked sites go through the VPN) and *All except* (everything except your bank list).
+- 🧠 **Three modes.** *All sites* (default: everything goes through the VPN), *Smart* (only selected or blocked sites go through the VPN) and *All except* (everything except your bank list).
 - 🎛 **Ready-made presets.** YouTube, Instagram, X, Discord, ChatGPT / Claude / Gemini, Facebook, LinkedIn, Telegram Web, Spotify / Netflix, dev tools.
 - 📡 **Auto-updated blocklist.** The [antifilter community](https://community.antifilter.download/) list is refreshed every 6 hours.
 - 🕵️ **Blocked-site detector.** When a page fails with `CONNECTION_RESET` or a timeout, Wokok offers *"Route via VPN?"* in one click.

@@ -2,7 +2,7 @@
 # Chrome talks to it over stdin/stdout; it runs xray (Reality) or ssh -D (fallback) as a detached process.
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-$VERSION = "2.1.11"
+$VERSION = "2.1.12"
 $BASE_PORT = 10808   # preferred local SOCKS port; next free one is used if busy
 $SOCKS = $BASE_PORT
 $D    = Join-Path $env:LOCALAPPDATA "WokokVPN"

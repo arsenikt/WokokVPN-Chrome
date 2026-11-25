@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.1.12
+- Default routing mode is now "All sites": everything goes through the VPN out of the box (Smart and All-except stay one click away)
+
 ## 2.1.11
 - Auto-detect the real SSH port: if the port in the link is closed, the helper finds the SSH server by its banner (tries common ports) and the extension saves the right port
 - The extension remembers when Reality is unreachable and goes straight to SSH next time (re-tests Reality every 6 h)

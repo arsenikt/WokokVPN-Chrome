@@ -24,7 +24,7 @@ export const DEFAULTS = {
   enabled: false,
   servers: [],            // [{id,name,host,port,id,pbk,sid,sni,ssh}]
   activeId: null,
-  mode: "smart",          // all | smart | except
+  mode: "all",            // all | smart | except (default: everything through the VPN)
   presets: ["youtube", "instagram", "x", "discord", "ai", "facebook", "linkedin"],
   smartSites: [],         // user-added sites routed via VPN
   exceptSites: ["sberbank.ru", "gosuslugi.ru", "tinkoff.ru", "tbank.ru", "vk.com", "ya.ru", "yandex.ru", "ozon.ru", "wildberries.ru", "mos.ru", "nalog.gov.ru", "avito.ru"],

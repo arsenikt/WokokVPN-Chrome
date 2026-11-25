@@ -81,7 +81,7 @@ curl -fsSL https://raw.githubusercontent.com/arsenikt/WokokVPN-Chrome/main/clien
 
 <img src="docs/img/smart-routing.png" alt="Умная маршрутизация" width="100%">
 
-- 🧠 **Три режима.** *Все сайты*, *Умный* (через VPN только выбранные и заблокированные сайты) и *Все, кроме* (всё, кроме банков).
+- 🧠 **Три режима.** *Все сайты* (по умолчанию: всё идёт через VPN), *Умный* (через VPN только выбранные и заблокированные сайты) и *Все, кроме* (всё, кроме банков).
 - 🎛 **Готовые пресеты.** YouTube, Instagram, X, Discord, ChatGPT / Claude / Gemini, Facebook, LinkedIn, Telegram Web, Spotify / Netflix, инструменты разработчика.
 - 📡 **Автообновляемый список блокировок.** [antifilter community](https://community.antifilter.download/) обновляется каждые 6 часов.
 - 🕵️ **Детектор блокировок.** Если сайт отвалился с `CONNECTION_RESET` или по таймауту, Wokok предложит «Открыть через VPN?» в один клик.
