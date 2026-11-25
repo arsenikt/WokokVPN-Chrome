@@ -2,8 +2,9 @@
 # Chrome talks to it over stdin/stdout; it runs xray (Reality) or ssh -D (fallback) as a detached process.
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-$VERSION = "2.1.0"
-$SOCKS = 10808
+$VERSION = "2.1.4"
+$BASE_PORT = 10808   # preferred local SOCKS port; next free one is used if busy
+$SOCKS = $BASE_PORT
 $D    = Join-Path $env:LOCALAPPDATA "WokokVPN"
 $RUN  = Join-Path $D "run"
 $XRAY = Join-Path $D "bin\xray.exe"
@@ -32,6 +33,23 @@ function Send-Message($obj) {
 }
 
 function Get-State { try { Get-Content $STATE -Raw | ConvertFrom-Json } catch { $null } }
+$st0 = Get-State; if ($st0 -and $st0.port) { $SOCKS = [int]$st0.port }
+
+# True if nothing listens on 127.0.0.1:$p (we try to bind it ourselves).
+function Test-Free($p) {
+  $l = New-Object Net.Sockets.TcpListener ([Net.IPAddress]::Loopback), $p
+  try { $l.Start(); $true } catch { $false } finally { try { $l.Stop() } catch {} }
+}
+function Find-FreePort($from) {
+  for ($p = $from; $p -lt $from + 50; $p++) { if (Test-Free $p) { return $p } }
+  throw "no free local port in $from-$($from + 49)"
+}
+# Our own xray/ssh left over from a crash or an old state file: safe to kill.
+function Stop-Orphans {
+  Get-CimInstance Win32_Process -Filter "Name='xray.exe' OR Name='ssh.exe'" -ErrorAction SilentlyContinue |
+    Where-Object { $_.CommandLine -like "*$RUN*" } |
+    ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+}
 function Test-Alive($procId) { if (-not $procId) { return $false }; [bool](Get-Process -Id $procId -ErrorAction SilentlyContinue) }
 
 function Test-Port($h, $p, $ms = 800) {
@@ -104,14 +122,16 @@ function Start-Ssh($s) {
 
 function Connect($s, $prefer) {
   Stop-Tunnel
-  if ((Test-Port "127.0.0.1" $SOCKS 300) -ge 0) { return @{ ok = $false; error = "Port $SOCKS is used by another app" } }
+  Stop-Orphans
+  Start-Sleep -Milliseconds 200
+  try { $script:SOCKS = Find-FreePort $BASE_PORT } catch { return @{ ok = $false; error = $_.Exception.Message } }
   $order = switch ($prefer) { "ssh" { @("ssh") } "reality" { @("reality") } default { @("reality", "ssh") } }
   $errors = @()
   foreach ($mode in $order) {
     try {
       $r = if ($mode -eq "reality") { Start-Reality $s } else { Start-Ssh $s }
       if ($r.ms -ge 0) {
-        @{ pid = $r.pid; mode = $mode; since = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds(); server = $s.host } | ConvertTo-Json | Set-Content $STATE -Encoding utf8
+        @{ pid = $r.pid; mode = $mode; since = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds(); server = $s.host; port = $SOCKS } | ConvertTo-Json | Set-Content $STATE -Encoding utf8
         return @{ ok = $true; connected = $true; mode = $mode; socksPort = $SOCKS; ping = $r.ms }
       }
       if (Test-Alive $r.pid) { Stop-Process -Id $r.pid -Force -ErrorAction SilentlyContinue }

@@ -18,7 +18,7 @@ async function applyProxy(s, up) {
     await chrome.proxy.settings.clear({ scope: "regular" });
   } else if (s.mode === "all") {
     await chrome.proxy.settings.set({ scope: "regular", value: { mode: "fixed_servers",
-      rules: { singleProxy: { scheme: "socks5", host: "127.0.0.1", port: SOCKS_PORT }, bypassList: BYPASS } } });
+      rules: { singleProxy: { scheme: "socks5", host: "127.0.0.1", port: s.socksPort || SOCKS_PORT }, bypassList: BYPASS } } });
   } else {
     await chrome.proxy.settings.set({ scope: "regular", value: { mode: "pac_script", pacScript: { data: pacScript(s) } } });
   }
@@ -55,7 +55,7 @@ async function connect() {
   for (const srv of order) {
     r = await native({ cmd: "connect", server: toHostServer(srv), prefer: s.transport });
     if (r.ok && r.connected) {
-      await save({ enabled: true, activeId: srv._id, since: Date.now(), lastMode: r.mode, lastError: null });
+      await save({ enabled: true, activeId: srv._id, since: Date.now(), lastMode: r.mode, lastError: null, socksPort: r.socksPort || SOCKS_PORT });
       break;
     }
     if (r.noHost || !s.autoBest) break;
@@ -86,6 +86,7 @@ const heal = serial(async () => {
   const s = await load();
   if (!s.enabled) { await applyProxy(s, false); await setIcon(false, s); return; }
   const st = await native({ cmd: "status" });
+  if (st.connected && st.socksPort && st.socksPort !== s.socksPort) { await save({ socksPort: st.socksPort }); s.socksPort = st.socksPort; }
   if (st.connected) { await applyProxy(s, true); await setIcon(true, s); return; }
   await applyProxy(s, false); // kill switch keeps the proxy set → traffic fails closed
   await setIcon(false, s);

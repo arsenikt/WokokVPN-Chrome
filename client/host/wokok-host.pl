@@ -4,8 +4,9 @@ use strict; use warnings;
 use JSON::PP; use IO::Socket::INET; use POSIX qw(setsid); use Time::HiRes qw(time sleep);
 use MIME::Base64 qw(decode_base64);
 
-my $VERSION = "2.1.0";
-my $SOCKS = 10808;
+my $VERSION = "2.1.4";
+my $BASE_PORT = 10808;   # preferred local SOCKS port; next free one is used if busy
+my $SOCKS = $BASE_PORT;
 my $D = ($^O eq 'darwin') ? "$ENV{HOME}/Library/Application Support/WokokVPN" : ($ENV{XDG_DATA_HOME} || "$ENV{HOME}/.local/share") . "/wokokvpn";
 my $RUN = "$D/run"; my $XRAY = "$D/bin/xray"; my $STATE = "$RUN/state.json";
 my $J = JSON::PP->new->utf8->canonical;
@@ -19,6 +20,11 @@ sub spew  { open my $f, '>', $_[0] or die "write $_[0]: $!"; print $f $_[1]; clo
 sub state { my $c = slurp($STATE); $c ? eval { $J->decode($c) } : undef }
 sub alive { my $p = shift; $p && kill(0, $p) }
 sub now_ms { int(time * 1000) }
+{ my $s0 = state(); $SOCKS = $s0->{port} if $s0 && $s0->{port}; }
+sub port_free { my $l = IO::Socket::INET->new(LocalAddr => '127.0.0.1', LocalPort => $_[0], Listen => 1, ReuseAddr => 0) or return 0; close $l; 1 }
+sub find_free { for my $p ($BASE_PORT .. $BASE_PORT + 49) { return $p if port_free($p) } die "no free local port in $BASE_PORT-" . ($BASE_PORT + 49) . "
+" }
+sub stop_orphans { system('pkill', '-f', "$RUN/") }
 
 sub port_ms { my ($h, $p, $t) = @_; my $t0 = time;
   my $s = IO::Socket::INET->new(PeerAddr => $h, PeerPort => $p, Timeout => ($t || 0.8)) or return -1;
@@ -59,14 +65,14 @@ sub start_ssh { my $s = shift; die "no SSH fallback in this link\n" unless $s->{
     '-o', "UserKnownHostsFile=$D/known_hosts", '-E', "$RUN/ssh.log", "$s->{ssh}{user}\@$s->{host}");
   ($pid, wait_up($pid)) }
 
-sub connect_ { my ($s, $prefer) = @_; stop_tunnel();
-  return { ok => JSON::PP::false, error => "Port $SOCKS is used by another app" } if port_ms('127.0.0.1', $SOCKS, 0.3) >= 0;
+sub connect_ { my ($s, $prefer) = @_; stop_tunnel(); stop_orphans(); sleep 0.2;
+  $SOCKS = eval { find_free() }; return { ok => JSON::PP::false, error => "$@" } unless $SOCKS;
   my @order = ($prefer // '') eq 'ssh' ? ('ssh') : ($prefer // '') eq 'reality' ? ('reality') : ('reality', 'ssh');
   my @err;
   for my $mode (@order) {
     my ($pid, $ms) = eval { $mode eq 'reality' ? start_reality($s) : start_ssh($s) };
     if ($@) { chomp(my $e = $@); push @err, "$mode: $e"; next }
-    if ($ms >= 0) { spew($STATE, $J->encode({ pid => $pid, mode => $mode, since => now_ms(), server => $s->{host} }));
+    if ($ms >= 0) { spew($STATE, $J->encode({ pid => $pid, mode => $mode, since => now_ms(), server => $s->{host}, port => $SOCKS }));
       return { ok => JSON::PP::true, connected => JSON::PP::true, mode => $mode, socksPort => $SOCKS, ping => $ms } }
     kill('TERM', $pid) if alive($pid); push @err, "$mode: no internet through tunnel";
   }

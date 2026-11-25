@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.4
+- Local SOCKS port is picked automatically: if 10808 is busy (another VPN/proxy), the helper uses the next free port (10809…10857) and the extension follows it
+- Leftover Wokok xray/ssh processes are cleaned up before connecting
+
 ## 2.1.3
 - Server installer no longer dies silently: fixed abort when `sshd -T` fails (Ubuntu socket activation), clear error with line + log on any failure
 - `sudo wokok link` shows your link again any time; all links saved to /root/wokok-links.txt

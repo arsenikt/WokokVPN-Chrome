@@ -39,6 +39,7 @@ export const DEFAULTS = {
   since: null,
   lastMode: null,
   lastError: null,
+  socksPort: SOCKS_PORT,  // actual local port reported by the helper (it skips busy ports)
 };
 
 export async function load() {
@@ -108,7 +109,7 @@ export function routesViaVpn(s, host) {
 }
 
 export function pacScript(s) {
-  const P = `SOCKS5 127.0.0.1:${SOCKS_PORT}`;
+  const P = `SOCKS5 127.0.0.1:${s.socksPort || SOCKS_PORT}`;
   const list = s.mode === "except" ? s.exceptSites : [...smartSet(s)];
   const hit = s.mode === "except" ? '"DIRECT"' : `"${P}"`;
   const miss = s.mode === "except" ? `"${P}"` : '"DIRECT"';
