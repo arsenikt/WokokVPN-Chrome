@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # wokok — manage your Wokok VPN server.
 set -euo pipefail
+WOKOK_VERSION="2.1.7"
 ETC=/etc/wokok
 CFG=/usr/local/etc/xray/config.json
 AUTH=/home/wokok/.ssh/authorized_keys
@@ -9,6 +10,7 @@ C1=$'\e[38;5;208m'; C2=$'\e[38;5;220m'; OK=$'\e[32m'; ERR=$'\e[31m'; DIM=$'\e[2m
 
 die() { printf '%s✖ %s%s\n' "$ERR" "$*" "$R" >&2; exit 1; }
 ok()  { printf '%s✔ %s%s\n' "$OK" "$*" "$R"; }
+say() { printf '%s🥡 %s%s\n' "$C1" "$*" "$R"; }
 [ "$(id -u)" -eq 0 ] || die "Run as root (sudo wokok …)"
 [ -f "$ETC/server.json" ] || die "Wokok is not installed: run server/install.sh"
 S() { jq -r ".$1" "$ETC/server.json"; }
@@ -137,6 +139,47 @@ cmd_uninstall() {
   ok "Wokok removed. Bye 🥡"
 }
 
+# wokok update [--check]: update wokok itself, Xray-core and the generated configs.
+# Keys, users, links and /etc/wokok/server.json are never touched.
+cmd_update() {
+  local repo="${WOKOK_REPO:-arsenikt/WokokVPN-Chrome}" branch="${WOKOK_BRANCH:-main}" ref sha tmp new self=/usr/local/bin/wokok
+  local xold xnew installer
+  ref="$branch"
+  # pin to the exact commit: raw.githubusercontent.com caches branch URLs for a few minutes
+  sha="$( (curl -fsS --max-time 10 "https://api.github.com/repos/$repo/commits/$branch" 2>/dev/null || true) | jq -r '.sha // empty' 2>/dev/null || true)"
+  [ -n "$sha" ] && ref="$sha"
+
+  tmp="$(mktemp)"; trap 'rm -f "$tmp"' RETURN
+  curl -fsSL --max-time 30 "https://raw.githubusercontent.com/$repo/$ref/server/wokok" -o "$tmp" || die "Cannot download the update from GitHub (no internet?)"
+  bash -n "$tmp" 2>/dev/null && grep -q '^WOKOK_VERSION=' "$tmp" || die "Downloaded file looks broken, keeping the current version"
+  new="$(sed -n 's/^WOKOK_VERSION="\(.*\)"$/\1/p' "$tmp" | head -1)"
+  xold="$("$XRAY" version 2>/dev/null | head -1 | awk '{print $2}' || true)"
+
+  if [ "${1:-}" = "--check" ]; then
+    printf 'wokok %s (latest %s) · Xray %s\n' "$WOKOK_VERSION" "${new:-?}" "${xold:-?}"
+    if [ "$new" = "$WOKOK_VERSION" ] && cmp -s "$tmp" "$self"; then ok "wokok is up to date"; else say "Update available: sudo wokok update"; fi
+    return
+  fi
+
+  say "Updating wokok $WOKOK_VERSION → ${new:-?}…"
+  chmod 755 "$tmp"; mv -f "$tmp" "$self"; trap - RETURN   # atomic: the running copy keeps its old inode
+
+  say "Updating Xray-core…"
+  installer="$(curl -fsSL --max-time 30 https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" || die "Cannot download the Xray installer"
+  bash -c "$installer" @ install >/tmp/wokok-update.log 2>&1 || { tail -n 15 /tmp/wokok-update.log >&2; die "Xray update failed (log: /tmp/wokok-update.log). wokok itself is already updated."; }
+  hash -r; xnew="$("$XRAY" version 2>/dev/null | head -1 | awk '{print $2}' || true)"
+
+  say "Rebuilding configs and restarting…"
+  "$self" render
+  "$self" savelinks 2>/dev/null || true
+  systemctl restart xray
+  sleep 1
+  systemctl is-active --quiet xray || { journalctl -u xray -n 15 --no-pager >&2 || true; die "Xray failed to start after the update (log above)"; }
+  ok "Up to date: wokok ${new:-$WOKOK_VERSION} · Xray ${xnew:-?}${xold:+ (was $xold)}"
+  printf '%s   Keys and links are unchanged: sudo wokok link%s\n' "$DIM" "$R"
+  printf '%s   On your PC: re-run the client installer to update the extension helper.%s\n' "$DIM" "$R"
+}
+
 help() {
   cat <<EOF
 ${C1}wokok${R} — Wokok VPN server control
@@ -149,7 +192,8 @@ ${C1}wokok${R} — Wokok VPN server control
   wokok sshport N     set the real SSH port used by the SSH fallback in links
   wokok render        rebuild configs from /etc/wokok
   wokok restart       restart xray
-  wokok update        update Xray-core
+  wokok update        update wokok + Xray-core to the latest version (--check: only look)
+  wokok version       show versions
   wokok uninstall     remove everything
 EOF
 }
@@ -164,7 +208,9 @@ case "${1:-help}" in
   sshport|ssh-port) cmd_sshport "${2:-}" ;;
   render) render ;;
   restart) reload; ok restarted ;;
-  update) bash -c "$(curl -fsSL https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install >/dev/null; reload; ok "Xray $("$XRAY" version | head -1 | awk '{print $2}')" ;;
+  update) cmd_update "${2:-}" ;;
+  savelinks) save_links ;;
+  version|-v|--version) printf 'wokok %s · Xray %s\n' "$WOKOK_VERSION" "$("$XRAY" version 2>/dev/null | head -1 | awk '{print $2}' || true)" ;;
   uninstall) cmd_uninstall "${2:-}" ;;
   *) help ;;
 esac
