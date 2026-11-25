@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.2
+- Client installers end with a clear 3-step guide: server command, Chrome, connect
+- Extension onboarding shows the server install command (click to copy) before asking for the wokok:// link
+
 ## 2.1.1
 - Website: install commands wrap instead of showing horizontal scrollbars
 - Tip jar is now a tiny collapsible 🥡 link (website, README, extension settings), no big image

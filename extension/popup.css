@@ -74,6 +74,10 @@ body.err #sub { color: #ff8a70; }
 
 section { margin-top: 14px; display: grid; gap: 8px; }
 section p { color: var(--paper); font-weight: 600; }
+section .step { font-size: 12.5px; }
+#srvCmd { cursor: copy; color: var(--gold); }
+#srvCmd.ok { border-color: var(--fire); }
+.muted { color: var(--muted); font-size: 11px; line-height: 1.4; }
 textarea, code { width: 100%; background: rgba(0,0,0,.35); border: 1px solid var(--line); border-radius: 10px; color: var(--gold); padding: 8px; font: 11px/1.4 Consolas, monospace; resize: none; outline: none; word-break: break-all; display: block; }
 textarea:focus { border-color: var(--fire); }
 .primary { border: 0; border-radius: 10px; padding: 9px; font-weight: 700; color: #fff; background: linear-gradient(135deg, var(--chili), var(--fire)); box-shadow: 0 6px 18px rgba(255,90,30,.35); }

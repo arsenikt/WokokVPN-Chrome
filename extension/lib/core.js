@@ -4,6 +4,7 @@ export const SOCKS_PORT = 10808;
 export const REPO = "https://github.com/arsenikt/WokokVPN-Chrome";
 export const INSTALL_WIN = "irm https://raw.githubusercontent.com/arsenikt/WokokVPN-Chrome/main/client/install.ps1 | iex";
 export const INSTALL_NIX = "curl -fsSL https://raw.githubusercontent.com/arsenikt/WokokVPN-Chrome/main/client/install.sh | bash";
+export const INSTALL_SERVER = "curl -fsSL https://raw.githubusercontent.com/arsenikt/WokokVPN-Chrome/main/server/install.sh | sudo bash";
 export const COMMUNITY_LIST = "https://community.antifilter.download/list/domains.lst";
 
 export const PRESETS = {
@@ -124,7 +125,7 @@ export const STR = {
     lighting: "Lighting the wok…", cooling: "Cooling down…", all: "All sites", smart: "Smart", except: "All except",
     viaVpn: "via VPN", direct: "direct", ip: "IP", ping: "Ping", speed: "Speed", uptime: "On fire", transport: "Transport",
     test: "test", testing: "…", noHost: "Install the helper on this computer (one command):", copy: "Copy", copied: "Copied!",
-    welcome: "Paste the link your server printed", add: "Add server", howTo: "How do I get a server?", settings: "Settings",
+    welcome: "2. Paste the wokok:// link it printed:", step1: "1. On your VPS (over SSH) run:", srvHint: "Click to copy. Already installed? sudo wokok link me", add: "Add server", howTo: "How do I get a server?", settings: "Settings",
     blocked: "looks blocked. Route it via VPN?", yes: "Yes", killOn: "Kill switch: tunnel dropped, traffic blocked", fastest: "Fastest",
     reconnecting: "Tunnel dropped, reconnecting…", wok: "Buy the author a wok",
   },
@@ -133,7 +134,7 @@ export const STR = {
     lighting: "Разжигаем вок…", cooling: "Гасим огонь…", all: "Все сайты", smart: "Умный", except: "Все, кроме",
     viaVpn: "через VPN", direct: "напрямую", ip: "IP", ping: "Пинг", speed: "Скорость", uptime: "На огне", transport: "Протокол",
     test: "тест", testing: "…", noHost: "Установите помощник на этот компьютер (одна команда):", copy: "Копировать", copied: "Скопировано!",
-    welcome: "Вставьте ссылку, которую выдал ваш сервер", add: "Добавить сервер", howTo: "Где взять сервер?", settings: "Настройки",
+    welcome: "2. Вставьте ссылку wokok://, которую он выдал:", step1: "1. На вашем VPS (по SSH) выполните:", srvHint: "Нажмите, чтобы скопировать. Уже установлен? sudo wokok link me", add: "Добавить сервер", howTo: "Где взять сервер?", settings: "Настройки",
     blocked: "похоже, заблокирован. Открыть через VPN?", yes: "Да", killOn: "Kill switch: туннель упал, трафик заблокирован", fastest: "Самый быстрый",
     reconnecting: "Туннель упал, переподключаемся…", wok: "На покупку вока",
   },

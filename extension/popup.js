@@ -1,4 +1,4 @@
-import { load, save, t, routesViaVpn, normDomain, addServer, fmtTime, flag, REPO, INSTALL_WIN, INSTALL_NIX } from "./lib/core.js";
+import { load, save, t, routesViaVpn, normDomain, addServer, fmtTime, flag, REPO, INSTALL_WIN, INSTALL_NIX, INSTALL_SERVER } from "./lib/core.js";
 
 const $ = (id) => document.getElementById(id);
 const body = document.body;
@@ -9,7 +9,7 @@ function texts() {
   L = t(S);
   $("modes").querySelectorAll("button").forEach((b) => (b.textContent = L[b.dataset.mode]));
   $("lIp").textContent = L.ip; $("lPing").textContent = L.ping; $("lSpeed").textContent = L.speed; $("lUp").textContent = L.uptime;
-  $("speedHint").textContent = L.test; $("wTitle").textContent = L.welcome; $("addBtn").textContent = L.add;
+  $("speedHint").textContent = L.test; $("wTitle").textContent = L.welcome; $("wStep1").textContent = L.step1; $("wHint").textContent = L.srvHint; $("srvCmd").textContent = INSTALL_SERVER; $("addBtn").textContent = L.add;
   $("howTo").textContent = L.howTo; $("howTo").href = REPO + "#-quick-start"; $("repo").href = REPO;
   $("nhText").textContent = L.noHost; $("copyCmd").textContent = L.copy; $("bYes").textContent = L.yes;
   $("opts").title = L.settings; $("wok").title = L.wok;
@@ -134,6 +134,10 @@ $("copyCmd").addEventListener("click", async () => {
   setTimeout(() => ($("copyCmd").textContent = L.copy), 1500);
 });
 showCmd();
+$("srvCmd").addEventListener("click", async () => {
+  await navigator.clipboard.writeText(INSTALL_SERVER);
+  $("srvCmd").classList.add("ok"); setTimeout(() => $("srvCmd").classList.remove("ok"), 1200);
+});
 
 (async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
