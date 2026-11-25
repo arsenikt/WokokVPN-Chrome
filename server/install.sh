@@ -23,6 +23,7 @@ while [ $# -gt 0 ]; do
     --sni) SNI="$2"; shift 2 ;;
     --name) NAME="$2"; shift 2 ;;
     --no-ssh) SSH_FALLBACK=0; shift ;;
+    --ssh-port) WOKOK_SSHPORT="$2"; shift 2 ;;
     --uninstall) UNINSTALL=1; shift ;;
     *) echo "Unknown option: $1"; exit 1 ;;
   esac
@@ -164,7 +165,10 @@ if [ ! -f "$ETC/server.json" ]; then
   [ -n "$IP" ] || die "Could not detect the public IP. Re-run with WOKOK_HOST=1.2.3.4"
   [ -n "$NAME" ] || NAME="Wokok $(hostname -s)"
   # sshd -T fails on many Ubuntu images (socket activation, no /run/sshd) - never let that abort us.
-  SSHPORT="$( (sshd -T 2>/dev/null || true) | awk '/^port /{print $2; exit}')"
+  # the port sshd really listens on is the most reliable source
+  SSHPORT="${WOKOK_SSHPORT:-}"
+  [ -n "$SSHPORT" ] || SSHPORT="$( (ss -ltnpH 2>/dev/null || true) | awk '/sshd/ { n=split($4,a,":"); print a[n]; exit }')"
+  [ -n "$SSHPORT" ] || SSHPORT="$( (sshd -T 2>/dev/null || true) | awk '/^port /{print $2; exit}')"
   [ -n "$SSHPORT" ] || SSHPORT="$(awk '/^[[:space:]]*Port[[:space:]]+[0-9]+/{print $2; exit}' /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf 2>/dev/null || true)"
   SSHPORT="${SSHPORT:-22}"
   jq -n --arg ip "$IP" --argjson port "$PORT" --arg sni "$SNI" --arg priv "$PRIV" --arg pub "$PUB" \

@@ -33,7 +33,8 @@ render() {
                     {type:"field",protocol:["bittorrent"],outboundTag:"block"}]}}' > "$CFG.tmp"
   mv "$CFG.tmp" "$CFG"
   if id wokok >/dev/null 2>&1; then
-    : > "$AUTH.tmp"
+    # keep keys that are not ours (e.g. from an older Wokok setup); only rewrite lines tagged "wokok:NAME"
+    { grep -v ' wokok:' "$AUTH" 2>/dev/null || true; } > "$AUTH.tmp"
     for d in "$ETC"/users/*/; do [ -f "$d/id_ed25519.pub" ] || continue
       printf 'restrict,port-forwarding,command="/bin/false" %s\n' "$(cut -d' ' -f1,2 "$d/id_ed25519.pub") wokok:$(basename "$d")" >> "$AUTH.tmp"
     done
@@ -112,6 +113,15 @@ cmd_status() {
   printf 'users: %s   ssh fallback: %s\n' "$(find "$ETC/users" -mindepth 1 -maxdepth 1 -type d | wc -l)" "$(S ssh)"
 }
 
+cmd_sshport() {
+  local p="${1:-}"
+  if [ -z "$p" ]; then printf 'SSH fallback port in links: %s\n' "$(S sshPort)"; return; fi
+  [[ "$p" =~ ^[0-9]{1,5}$ ]] && [ "$p" -ge 1 ] && [ "$p" -le 65535 ] || die "Usage: wokok sshport 5223"
+  jq --argjson p "$p" '.sshPort=$p' "$ETC/server.json" > "$ETC/s.tmp" && mv "$ETC/s.tmp" "$ETC/server.json"
+  chmod 600 "$ETC/server.json"; save_links 2>/dev/null || true
+  ok "SSH port in links is now $p. Get the fresh link: sudo wokok link"
+}
+
 cmd_sni() {
   local s="${1:-}"; [ -n "$s" ] || die "Usage: wokok sni www.example.com"
   jq --arg s "$s" '.sni=$s' "$ETC/server.json" > "$ETC/s.tmp" && mv "$ETC/s.tmp" "$ETC/server.json"
@@ -136,6 +146,7 @@ ${C1}wokok${R} — Wokok VPN server control
   wokok link [NAME]   show your link + QR again (also in /root/wokok-links.txt)
   wokok status        health check
   wokok sni HOST      change the site Reality disguises as
+  wokok sshport N     set the real SSH port used by the SSH fallback in links
   wokok render        rebuild configs from /etc/wokok
   wokok restart       restart xray
   wokok update        update Xray-core
@@ -150,6 +161,7 @@ case "${1:-help}" in
   link|links|qr|show) cmd_link "${2:-}" ;;
   status) cmd_status ;;
   sni) cmd_sni "${2:-}" ;;
+  sshport|ssh-port) cmd_sshport "${2:-}" ;;
   render) render ;;
   restart) reload; ok restarted ;;
   update) bash -c "$(curl -fsSL https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install >/dev/null; reload; ok "Xray $("$XRAY" version | head -1 | awk '{print $2}')" ;;
