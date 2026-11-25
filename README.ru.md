@@ -127,6 +127,10 @@ Chrome ──PAC/прокси──► 127.0.0.1:10808 (xray, локальный
 Подойдёт любой VPS с 512 МБ RAM за пределами вашей страны, например Hetzner, Aeza, Vultr или DigitalOcean. Рекомендуется Ubuntu 22.04/24.04.
 </details>
 
+<details><summary>Расширение пишет «server port 443 is unreachable»</summary>
+Порт закрыт файрволом хостера (в веб-панели провайдера, не на самом сервере). Откройте входящий <b>TCP 443</b> (или порт, который напечатал установщик, смотрите <code>sudo wokok status</code>) и повторите.
+</details>
+
 <details><summary>Порт 443 занят</summary>
 Установщик сам переключится на 8443. Можно также указать <code>--port N</code>.
 </details>

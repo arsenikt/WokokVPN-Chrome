@@ -134,6 +134,10 @@ It works in any Chromium browser: Chrome, Edge, Brave, Vivaldi, Yandex Browser, 
 Any VPS with 512 MB RAM outside your country works, for example Hetzner, DigitalOcean, Vultr or Aeza. Ubuntu 22.04/24.04 is recommended.
 </details>
 
+<details><summary>Extension says "server port 443 is unreachable"</summary>
+Your VPS provider's firewall (in its web panel, not on the server) is blocking the port. Open <b>TCP 443</b> (or the port printed by the installer, see <code>sudo wokok status</code>) for inbound traffic and try again.
+</details>
+
 <details><summary>Port 443 is taken on my server</summary>
 The installer automatically falls back to 8443. You can also pass <code>--port N</code>.
 </details>
